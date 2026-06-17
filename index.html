@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#c8102e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="LFC Picks" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Liverpool Prediction League</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="club-lockup">
+        <div class="crest">LFC</div>
+        <div>
+          <p class="eyebrow">Liverpool FC</p>
+          <h1>Prediction League</h1>
+          <p class="subtitle">PIN-locked private predictions, editable squad tiers, opponent manager and season scoring.</p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="ghost" id="exportBtn">Export backup</button>
+        <label class="ghost file-label">
+          Import backup
+          <input type="file" id="importFile" accept="application/json" />
+        </label>
+      </div>
+    </header>
+
+    <main>
+      <section class="score-grid" id="scoreboard"></section>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="matches">Matches</button>
+        <button class="tab" data-tab="players">Liverpool squad</button>
+        <button class="tab" data-tab="teams">Opponents</button>
+        <button class="tab" data-tab="history">History</button>
+      </nav>
+
+      <section class="tab-panel active" id="matchesPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Next fixture</p>
+              <h2>Create a match</h2>
+            </div>
+          </div>
+          <form id="matchForm" class="match-form">
+            <div>
+              <label>Opponent</label>
+              <select id="opponentSelect" required></select>
+            </div>
+            <div>
+              <label>Match date</label>
+              <input id="dateInput" type="date" />
+            </div>
+            <button type="submit">Create match</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Open matches</p>
+              <h2>Private predictions & results</h2>
+            </div>
+          </div>
+          <div class="notice">
+            Each prediction is locked with a PIN. This prevents casual peeking on the same device, but do not reuse important passwords.
+          </div>
+          <div id="activeMatches" class="match-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="playersPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Squad manager</p>
+              <h2>Players & scoring tiers</h2>
+            </div>
+          </div>
+          <form id="playerForm" class="manager-form">
+            <input id="playerName" placeholder="Player name, e.g. Mohamed Salah" required />
+            <select id="playerTier">
+              <option value="1">Tier 1 - main scorer: 1 pt</option>
+              <option value="2">Tier 2 - regular scorer: 2 pts</option>
+              <option value="3">Tier 3 - occasional scorer: 3 pts</option>
+              <option value="4">Tier 4 - rare scorer: 4 pts</option>
+              <option value="5">Tier 5 - defender/very rare: 5 pts</option>
+              <option value="8">Tier 6 - keeper/chaos pick: 8 pts</option>
+            </select>
+            <button type="submit">Add player</button>
+          </form>
+          <div class="tier-help">
+            You can change tiers any time. Scoring uses the current tier when you press calculate.
+          </div>
+          <div id="playerList" class="manager-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="teamsPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Opponent manager</p>
+              <h2>Teams you might face</h2>
+            </div>
+          </div>
+          <form id="teamForm" class="manager-form">
+            <input id="teamName" placeholder="Team name, e.g. Real Madrid" required />
+            <input id="teamCode" placeholder="Badge text, e.g. RMA" maxlength="5" />
+            <button type="submit">Add team</button>
+          </form>
+          <div id="teamList" class="manager-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="historyPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Season archive</p>
+              <h2>Match history</h2>
+            </div>
+            <button class="danger ghost" id="resetBtn">Reset season</button>
+          </div>
+          <div id="history" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <template id="matchTemplate">
+    <article class="match-card">
+      <div class="match-card-header">
+        <div class="fixture">
+          <div class="team">
+            <div class="badge lfc-badge">LFC</div>
+            <strong>Liverpool</strong>
+          </div>
+          <span class="versus">vs</span>
+          <div class="team">
+            <div class="badge opponent-badge"></div>
+            <strong class="opponent-name"></strong>
+          </div>
+        </div>
+        <div class="match-meta"></div>
+      </div>
+
+      <div class="privacy-grid">
+        <div class="locked-card prediction-card" data-owner-card="you">
+          <h3>Your prediction</h3>
+          <div class="lock-status" data-status="you">Not locked yet</div>
+          <div class="private-fields" data-private="you">
+            <div class="score-row">
+              <input data-path="you.scoreL" type="number" min="0" placeholder="LFC" />
+              <span>-</span>
+              <input data-path="you.scoreO" type="number" min="0" placeholder="Opp" />
+            </div>
+            <textarea data-path="you.scorers" placeholder="Goal scorers, comma separated: Salah, Díaz"></textarea>
+            <input class="pin-input" data-pin="you" type="password" inputmode="numeric" placeholder="Choose PIN to lock" />
+            <button class="lock-btn" data-owner="you">Lock prediction</button>
+          </div>
+          <div class="locked-view" data-locked-view="you">
+            <p>Prediction is locked.</p>
+            <input class="pin-input" data-unlock-pin="you" type="password" inputmode="numeric" placeholder="Enter PIN" />
+            <button class="unlock-btn ghost" data-owner="you">Unlock / edit</button>
+          </div>
+        </div>
+
+        <div class="locked-card prediction-card" data-owner-card="wife">
+          <h3>Wife prediction</h3>
+          <div class="lock-status" data-status="wife">Not locked yet</div>
+          <div class="private-fields" data-private="wife">
+            <div class="score-row">
+              <input data-path="wife.scoreL" type="number" min="0" placeholder="LFC" />
+              <span>-</span>
+              <input data-path="wife.scoreO" type="number" min="0" placeholder="Opp" />
+            </div>
+            <textarea data-path="wife.scorers" placeholder="Goal scorers, comma separated"></textarea>
+            <input class="pin-input" data-pin="wife" type="password" inputmode="numeric" placeholder="Choose PIN to lock" />
+            <button class="lock-btn" data-owner="wife">Lock prediction</button>
+          </div>
+          <div class="locked-view" data-locked-view="wife">
+            <p>Prediction is locked.</p>
+            <input class="pin-input" data-unlock-pin="wife" type="password" inputmode="numeric" placeholder="Enter PIN" />
+            <button class="unlock-btn ghost" data-owner="wife">Unlock / edit</button>
+          </div>
+        </div>
+
+        <div class="locked-card actual-box">
+          <h3>Actual result</h3>
+          <div class="score-row">
+            <input data-path="actual.scoreL" type="number" min="0" placeholder="LFC" />
+            <span>-</span>
+            <input data-path="actual.scoreO" type="number" min="0" placeholder="Opp" />
+          </div>
+          <textarea data-path="actual.scorers" placeholder="Actual Liverpool scorers, comma separated"></textarea>
+        </div>
+
+        <div class="locked-card rules-box">
+          <h3>Actions</h3>
+          <p>Exact score: <strong>5 pts</strong></p>
+          <p>Correct scorer: player tier points.</p>
+          <button class="reveal-btn ghost">Reveal both with PINs</button>
+          <button class="calculate-btn">Calculate points</button>
+          <button class="delete-btn ghost danger">Delete match</button>
+        </div>
+      </div>
+
+      <div class="result-strip"></div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
