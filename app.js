@@ -584,6 +584,7 @@ function renderMatchList(containerId, gameType) {
   openMatches.forEach(match => {
     const node = template.content.cloneNode(true);
     const root = node.querySelector(".match-card");
+    root.dataset.matchId = match.id;
     node.querySelector(".fixture").innerHTML = fixtureHtml(match);
     node.querySelector(".match-meta").textContent = match.date || "No date set";
 
@@ -900,6 +901,73 @@ document.getElementById("seasonForm").addEventListener("submit", async event => 
   event.target.reset();
 });
 
+document.addEventListener("click", async event => {
+  const saveBtn = event.target.closest(".save-prediction-btn");
+  if (!saveBtn) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const card = saveBtn.closest(".match-card");
+  if (!card) {
+    alert("Could not find match card.");
+    return;
+  }
+
+  const matchId = card.dataset.matchId;
+  const statusBox = card.querySelector(".saved-status");
+
+  const scoreHomeInput = card.querySelector('[data-own="scoreHome"]');
+  const scoreAwayInput = card.querySelector('[data-own="scoreAway"]');
+  const scorer0 = card.querySelector('[data-own="scorer0"]');
+  const scorer1 = card.querySelector('[data-own="scorer1"]');
+  const scorer2 = card.querySelector('[data-own="scorer2"]');
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving...";
+  if (statusBox) {
+    statusBox.textContent = "Saving prediction to cloud...";
+    statusBox.classList.remove("not-submitted");
+    statusBox.classList.add("submitted");
+  }
+
+  try {
+    await savePrediction(matchId, {
+      scoreHome: scoreHomeInput?.value ?? "",
+      scoreAway: scoreAwayInput?.value ?? "",
+      scorers: [
+        scorer0?.value ?? "",
+        scorer1?.value ?? "",
+        scorer2?.value ?? ""
+      ]
+    });
+
+    if (statusBox) {
+      statusBox.textContent = "Your prediction is saved to the cloud. You can still edit until reveal.";
+      statusBox.classList.add("submitted");
+      statusBox.classList.remove("not-submitted");
+    }
+
+    saveBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save my prediction";
+    }, 1000);
+  } catch (error) {
+    console.error("Global save handler failed:", error);
+    if (statusBox) {
+      statusBox.textContent = `Save failed: ${error.message || "Unknown error"}`;
+      statusBox.classList.remove("submitted");
+      statusBox.classList.add("not-submitted");
+    }
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Save my prediction";
+    setCloudStatus("Save failed", "offline");
+    alert(`Save failed: ${error.message || "Unknown error"}`);
+  }
+}, true);
+
+
 document.getElementById("exportBtn").addEventListener("click", exportBackup);
 
 document.getElementById("loginForm").addEventListener("submit", async event => {
@@ -964,8 +1032,19 @@ async function boot() {
 }
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  window.addEventListener("load", async () => {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      }
+    } catch (error) {
+      console.warn("Could not clear old service worker cache:", error);
+    }
   });
 }
 
