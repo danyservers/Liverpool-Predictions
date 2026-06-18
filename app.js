@@ -51,6 +51,27 @@ const DEFAULT_PLAYERS = [
   { id: cryptoId(), name: "Giorgi Mamardashvili", points: 8 }
 ];
 
+const DEFAULT_OTHER_PLAYERS = [
+  { id: cryptoId(), name: "Erling Haaland", points: 1 },
+  { id: cryptoId(), name: "Alexander Sørloth", points: 1 },
+  { id: cryptoId(), name: "Martin Ødegaard", points: 2 },
+  { id: cryptoId(), name: "Antonio Nusa", points: 2 },
+  { id: cryptoId(), name: "Oscar Bobb", points: 2 },
+  { id: cryptoId(), name: "Sander Berge", points: 4 },
+  { id: cryptoId(), name: "Leo Østigård", points: 5 },
+  { id: cryptoId(), name: "David Raya", points: 8 },
+  { id: cryptoId(), name: "Álvaro Morata", points: 1 },
+  { id: cryptoId(), name: "Lamine Yamal", points: 1 },
+  { id: cryptoId(), name: "Nico Williams", points: 2 },
+  { id: cryptoId(), name: "Dani Olmo", points: 2 },
+  { id: cryptoId(), name: "Pedri", points: 3 },
+  { id: cryptoId(), name: "Fabián Ruiz", points: 3 },
+  { id: cryptoId(), name: "Rodri", points: 4 },
+  { id: cryptoId(), name: "Dani Carvajal", points: 5 },
+  { id: cryptoId(), name: "Aymeric Laporte", points: 5 },
+  { id: cryptoId(), name: "Unai Simón", points: 8 }
+];
+
 const DEFAULT_OPPONENTS = [
   ["Arsenal","ARS"], ["Chelsea","CHE"], ["Manchester City","MCI"], ["Manchester United","MUN"],
   ["Everton","EVE"], ["Tottenham","TOT"], ["Newcastle","NEW"], ["Aston Villa","AVL"],
@@ -69,6 +90,7 @@ const defaultConfig = () => ({
   activeSeasonId: DEFAULT_SEASON_ID,
   seasons: [{ id: DEFAULT_SEASON_ID, name: DEFAULT_SEASON_ID }],
   players: DEFAULT_PLAYERS,
+  otherPlayers: DEFAULT_OTHER_PLAYERS,
   opponents: DEFAULT_OPPONENTS
 });
 
@@ -120,8 +142,13 @@ function parseScorers(value) {
 }
 
 function getPlayerPoints(playerName, gameType) {
-  if (gameType === "other") return 1;
   const clean = normaliseName(playerName).toLowerCase();
+
+  if (gameType === "other") {
+    const otherPlayer = (configState.otherPlayers || []).find(p => p.name.toLowerCase() === clean);
+    return otherPlayer ? Number(otherPlayer.points) : 1;
+  }
+
   const player = configState.players.find(p => p.name.toLowerCase() === clean);
   return player ? Number(player.points) : 2;
 }
@@ -351,8 +378,7 @@ async function revealAndCalculate(matchId, actualData) {
   if (!match) return;
 
   if (actualData.actualHome === "" || actualData.actualAway === "") {
-    alert("Enter the actual score before revealing.");
-    return;
+    throw new Error("Please enter end result.");
   }
 
   if (!match.submitted?.dany || !match.submitted?.isa) {
@@ -408,6 +434,7 @@ async function revealAndCalculate(matchId, actualData) {
 
   setCloudStatus("Revealed and calculated", "online");
   render();
+  showRoundSummary(matches[localIndex] || { ...updatedMatch, calculated: true, summary });
   setTimeout(() => postToDiscord(matchId, true), 1000);
 }
 
@@ -422,8 +449,16 @@ async function postToDiscord(matchId, silent = false) {
   }
 }
 
-async function deleteMatch(matchId) {
-  if (!confirm("Delete this match?")) return;
+async function deleteMatch(matchId, ask = true) {
+  if (ask && !confirm("Delete this match?")) return;
+
+  try {
+    const predSnap = await getDocs(collection(db, "matches", matchId, "predictions"));
+    await Promise.all(predSnap.docs.map(pred => deleteDoc(doc(db, "matches", matchId, "predictions", pred.id))));
+  } catch (error) {
+    console.warn("Could not delete prediction subdocuments:", error);
+  }
+
   await deleteDoc(doc(db, "matches", matchId));
 }
 
@@ -466,6 +501,22 @@ function totals(gameType, seasonId = null) {
   }, { dany: 0, isa: 0, played: 0 });
 }
 
+function renderOtherScoreboard() {
+  const el = document.getElementById("otherScoreboard");
+  if (!el) return;
+
+  const season = totals("other", configState.activeSeasonId);
+  const overall = totals("other");
+  const leader = season.dany === season.isa ? "Draw" : season.dany > season.isa ? "Dany" : "Isa";
+
+  el.innerHTML = `
+    <div class="score-card"><span>Other season</span><strong>${season.dany}-${season.isa}</strong><small>Dany - Isa</small></div>
+    <div class="score-card"><span>Other overall</span><strong>${overall.dany}-${overall.isa}</strong></div>
+    <div class="score-card"><span>Other leader</span><strong>${leader}</strong></div>
+    <div class="score-card"><span>Other matches</span><strong>${season.played}</strong></div>
+  `;
+}
+
 function renderScoreboard() {
   const lfcSeason = totals("lfc", configState.activeSeasonId);
   const lfcOverall = totals("lfc");
@@ -500,14 +551,9 @@ function setupScorerPickers(node, match, existingScorers = []) {
     node.querySelector('[data-own="scorer2"]')
   ];
 
-  if (match.gameType !== "lfc") {
-    scorerFields.forEach((field, index) => {
-      if (field) field.value = existingScorers[index] || "";
-    });
-    return;
-  }
-
-  const players = [...configState.players].sort((a, b) => a.name.localeCompare(b.name));
+  const players = match.gameType === "lfc"
+    ? [...configState.players].sort((a, b) => a.name.localeCompare(b.name))
+    : [...(configState.otherPlayers || [])].sort((a, b) => a.name.localeCompare(b.name));
 
   scorerFields.forEach((field, index) => {
     if (!field) return;
@@ -529,16 +575,13 @@ function setupActualScorerPicker(node, match, existingActualScorers = []) {
   const actualField = node.querySelector('[data-actual="actualScorers"]');
   if (!actualField) return;
 
-  if (match.gameType !== "lfc") {
-    actualField.value = parseScorers(existingActualScorers).join(", ");
-    return;
-  }
-
   const wrapper = document.createElement("div");
   wrapper.className = "actual-scorer-dropdowns";
   wrapper.dataset.actual = "actualScorersGroup";
 
-  const players = [...configState.players].sort((a, b) => a.name.localeCompare(b.name));
+  const players = match.gameType === "lfc"
+    ? [...configState.players].sort((a, b) => a.name.localeCompare(b.name))
+    : [...(configState.otherPlayers || [])].sort((a, b) => a.name.localeCompare(b.name));
   const optionHtml = `<option value="">No scorer selected</option>` + players.map(player => {
     return `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)}</option>`;
   }).join("");
@@ -844,6 +887,49 @@ function renderPlayers() {
   });
 }
 
+function renderOtherPlayers() {
+  const list = document.getElementById("otherPlayerList");
+  if (!list) return;
+
+  list.innerHTML = "";
+  [...(configState.otherPlayers || [])].sort((a,b) => a.name.localeCompare(b.name)).forEach(player => {
+    const item = document.createElement("div");
+    item.className = "manager-item";
+    item.innerHTML = `
+      <div>
+        <strong>${escapeHtml(player.name)}</strong>
+        <div class="muted">Correct scorer gives ${player.points} point${Number(player.points) === 1 ? "" : "s"}</div>
+      </div>
+      <div class="manager-item-actions">
+        <select>
+          <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
+          <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
+        </select>
+        <button type="button" class="ghost rename">Rename</button>
+        <button type="button" class="ghost danger remove">Remove</button>
+      </div>
+    `;
+    const select = item.querySelector("select");
+    select.value = String(player.points);
+    select.addEventListener("change", async e => {
+      player.points = Number(e.target.value);
+      await saveConfig({ otherPlayers: configState.otherPlayers });
+    });
+    item.querySelector(".rename").addEventListener("click", async () => {
+      const next = prompt("Player name:", player.name);
+      if (!next) return;
+      player.name = normaliseName(next);
+      await saveConfig({ otherPlayers: configState.otherPlayers });
+    });
+    item.querySelector(".remove").addEventListener("click", async () => {
+      if (!confirm(`Remove ${player.name}?`)) return;
+      configState.otherPlayers = configState.otherPlayers.filter(p => p.id !== player.id);
+      await saveConfig({ otherPlayers: configState.otherPlayers });
+    });
+    list.appendChild(item);
+  });
+}
+
 function renderSeasons() {
   const list = document.getElementById("seasonList");
   list.innerHTML = "";
@@ -872,6 +958,120 @@ function renderSeasons() {
   });
 }
 
+function predictionDetailHtml(label, pred, match, score) {
+  const predictedScorers = parseScorers(pred?.scorers);
+  const actualScorers = parseScorers(match.actualScorers).map(s => s.toLowerCase());
+
+  const scorerRows = predictedScorers.length
+    ? predictedScorers.map(player => {
+        const hit = actualScorers.includes(player.toLowerCase());
+        const pts = hit ? getPlayerPoints(player, match.gameType) : 0;
+        return `
+          <div class="summary-line ${hit ? "hit" : "miss"}">
+            <span>${escapeHtml(player)}</span>
+            <strong>${hit ? `+${pts}` : "0"}</strong>
+          </div>
+        `;
+      }).join("")
+    : `<div class="summary-line miss"><span>No scorers picked</span><strong>0</strong></div>`;
+
+  const exact = pred &&
+    String(pred.scoreHome) === String(match.actualHome) &&
+    String(pred.scoreAway) === String(match.actualAway);
+
+  return `
+    <div class="summary-card reveal-player-card">
+      <h3>${escapeHtml(label)}</h3>
+      <div class="summary-points">${score.points} pts</div>
+      <div class="pred-line"><strong>Prediction:</strong> ${escapeHtml(pred?.scoreHome ?? "-")} - ${escapeHtml(pred?.scoreAway ?? "-")}</div>
+      <div class="summary-line ${exact ? "hit" : "miss"}">
+        <span>Exact score</span>
+        <strong>${exact ? "+5" : "0"}</strong>
+      </div>
+      ${scorerRows}
+      <p class="muted">${escapeHtml(score.breakdown.join(", ") || "No scoring picks")}</p>
+    </div>
+  `;
+}
+
+function showRoundSummary(match) {
+  const modal = document.getElementById("roundSummaryModal");
+  const content = document.getElementById("roundSummaryContent");
+  if (!modal || !content) return;
+
+  const danyPred = getPred(match.id, "dany");
+  const isaPred = getPred(match.id, "isa");
+  const danyScore = scorePrediction(danyPred, match);
+  const isaScore = scorePrediction(isaPred, match);
+  const summary = match.summary || {
+    danyPoints: danyScore.points,
+    isaPoints: isaScore.points,
+    roundWinner: danyScore.points === isaScore.points ? "Draw" : danyScore.points > isaScore.points ? "Dany" : "Isa",
+    seasonLeader: "-",
+    overallLeader: "-"
+  };
+
+  content.innerHTML = `
+    <div class="actual-summary">
+      <h3>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</h3>
+      <p>Actual scorers: <strong>${escapeHtml(parseScorers(match.actualScorers).join(", ") || "-")}</strong></p>
+    </div>
+    <div class="summary-cards reveal-summary-grid">
+      ${predictionDetailHtml("Dany", danyPred, match, danyScore)}
+      ${predictionDetailHtml("Isa", isaPred, match, isaScore)}
+      <div class="summary-card winner-card">
+        <h3>Round result</h3>
+        <div class="summary-points">${escapeHtml(summary.roundWinner || "-")}</div>
+        <p>Dany: <strong>${summary.danyPoints ?? danyScore.points}</strong> pts</p>
+        <p>Isa: <strong>${summary.isaPoints ?? isaScore.points}</strong> pts</p>
+        <p>Season leader: <strong>${escapeHtml(summary.seasonLeader || "-")}</strong></p>
+        <p>Overall leader: <strong>${escapeHtml(summary.overallLeader || "-")}</strong></p>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeRoundSummary() {
+  const modal = document.getElementById("roundSummaryModal");
+  if (!modal) return;
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function summaryCardHtml(match) {
+  const s = match.summary || {};
+  const danyBreakdown = (s.danyBreakdown || []).join(", ") || "No scoring picks";
+  const isaBreakdown = (s.isaBreakdown || []).join(", ") || "No scoring picks";
+
+  return `
+    <div class="summary-cards">
+      <div class="summary-card">
+        <h3>Dany</h3>
+        <div class="summary-points">${s.danyPoints || 0} pts</div>
+        <p>${escapeHtml(danyBreakdown)}</p>
+      </div>
+      <div class="summary-card">
+        <h3>Isa</h3>
+        <div class="summary-points">${s.isaPoints || 0} pts</div>
+        <p>${escapeHtml(isaBreakdown)}</p>
+      </div>
+      <div class="summary-card winner-card">
+        <h3>Round</h3>
+        <div class="summary-points">${escapeHtml(s.roundWinner || "-")}</div>
+        <p>Season leader: ${escapeHtml(s.seasonLeader || "-")} • Overall leader: ${escapeHtml(s.overallLeader || "-")}</p>
+      </div>
+    </div>
+  `;
+}
+
+async function deleteHistoryMatch(matchId) {
+  if (!confirm("Delete this completed match? Scores will update automatically.")) return;
+  await deleteMatch(matchId, false);
+}
+
 function renderHistory() {
   const history = document.getElementById("history");
   const completed = matches
@@ -888,16 +1088,18 @@ function renderHistory() {
     const item = document.createElement("div");
     item.className = "history-item";
     item.innerHTML = `
-      <div>
+      <div class="history-main">
         <strong>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</strong>
         <div class="muted">${escapeHtml(match.seasonId)} • ${match.gameType === "lfc" ? "Liverpool" : "Other"} • Round winner: ${escapeHtml(match.summary?.roundWinner || "-")}</div>
-        <div class="muted">Dany: ${escapeHtml((match.summary?.danyBreakdown || []).join(", ") || "0")} | Isa: ${escapeHtml((match.summary?.isaBreakdown || []).join(", ") || "0")}</div>
+        ${summaryCardHtml(match)}
       </div>
-      <div>
+      <div class="history-actions">
         <span class="pill">Dany ${match.summary?.danyPoints || 0}</span>
         <span class="pill">Isa ${match.summary?.isaPoints || 0}</span>
+        <button type="button" class="ghost danger delete-history">Delete</button>
       </div>
     `;
+    item.querySelector(".delete-history").addEventListener("click", () => deleteHistoryMatch(match.id));
     history.appendChild(item);
   });
 }
@@ -909,6 +1111,8 @@ function render() {
   renderMatchList("lfcMatches", "lfc");
   renderMatchList("otherMatches", "other");
   renderPlayers();
+  renderOtherPlayers();
+  renderOtherScoreboard();
   renderSeasons();
   renderHistory();
 }
@@ -975,6 +1179,18 @@ document.getElementById("playerForm").addEventListener("submit", async event => 
   if (!name) return;
   configState.players.push({ id: cryptoId(), name, points });
   await saveConfig({ players: configState.players });
+  event.target.reset();
+});
+
+document.getElementById("otherPlayerForm")?.addEventListener("submit", async event => {
+  event.preventDefault();
+  const name = normaliseName(document.getElementById("otherPlayerName").value);
+  const points = Number(document.getElementById("otherPlayerTier").value);
+  if (!name) return;
+
+  configState.otherPlayers = configState.otherPlayers || [];
+  configState.otherPlayers.push({ id: cryptoId(), name, points });
+  await saveConfig({ otherPlayers: configState.otherPlayers });
   event.target.reset();
 });
 
@@ -1078,6 +1294,11 @@ document.addEventListener("click", async event => {
   const actualHome = card.querySelector('[data-actual="actualHome"]')?.value ?? "";
   const actualAway = card.querySelector('[data-actual="actualAway"]')?.value ?? "";
 
+  if (String(actualHome).trim() === "" || String(actualAway).trim() === "") {
+    alert("Please enter end result.");
+    return;
+  }
+
   revealBtn.disabled = true;
   revealBtn.textContent = "Revealing...";
   setCloudStatus("Revealing prediction...", "online");
@@ -1103,6 +1324,15 @@ document.addEventListener("click", async event => {
 
 
 document.getElementById("exportBtn").addEventListener("click", exportBackup);
+
+document.getElementById("closeSummaryBtn")?.addEventListener("click", closeRoundSummary);
+document.getElementById("roundSummaryModal")?.addEventListener("click", event => {
+  if (event.target.id === "roundSummaryModal") closeRoundSummary();
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeRoundSummary();
+});
+
 
 document.getElementById("loginForm").addEventListener("submit", async event => {
   event.preventDefault();
