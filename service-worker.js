@@ -1,4 +1,4 @@
-const CACHE_NAME = "lfc-prediction-league-v12-final-ui-uid";
+const CACHE_NAME = "lfc-prediction-league-v13-save-fix";
 const FILES = ["./","./index.html","./style.css","./app.js","./firebase-config.js","./manifest.json","./icon-192.svg","./icon-512.svg","./liverpool-logo.svg"];
 
 self.addEventListener("install", event => {

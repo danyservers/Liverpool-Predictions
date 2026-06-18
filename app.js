@@ -262,39 +262,43 @@ async function saveConfig(patch) {
 }
 
 async function savePrediction(matchId, data) {
-  if (!currentProfile) return;
+  if (!currentProfile) {
+    throw new Error("No logged-in profile was found.");
+  }
+
   const match = matches.find(m => m.id === matchId);
-  if (!match || match.revealed) {
-    alert("This match has already been revealed, so predictions are locked.");
-    return;
+  if (!match) {
+    throw new Error("Match was not found in the local match list.");
+  }
+
+  if (match.revealed) {
+    throw new Error("This match has already been revealed, so predictions are locked.");
   }
 
   const scoreHome = String(data.scoreHome ?? "").trim();
   const scoreAway = String(data.scoreAway ?? "").trim();
 
   if (scoreHome === "" || scoreAway === "") {
-    alert("Add your predicted score before saving.");
-    return;
+    throw new Error("Add your predicted score before saving.");
   }
+
+  const scorers = parseScorers(data.scorers);
 
   await setDoc(doc(db, "matches", matchId, "predictions", currentProfile.key), {
     ownerKey: currentProfile.key,
     ownerName: currentProfile.name,
     scoreHome,
     scoreAway,
-    scorers: parseScorers(data.scorers),
+    scorers,
     submittedAt: serverTimestamp()
   }, { merge: true });
 
-  await setDoc(doc(db, "matches", matchId), {
-    submitted: {
-      [currentProfile.key]: true
-    },
+  await updateDoc(doc(db, "matches", matchId), {
+    [`submitted.${currentProfile.key}`]: true,
     updatedAt: serverTimestamp()
-  }, { merge: true });
+  });
 
   setCloudStatus("Prediction saved to cloud", "online");
-  alert("Prediction saved.");
 }
 
 async function createLfcMatch(opponent, date) {
@@ -624,17 +628,48 @@ function renderMatchList(containerId, gameType) {
       node.querySelector(".opponent-prediction-view").innerHTML = predictionHtml(otherPred, match);
     }
 
-    node.querySelector(".save-prediction-btn")?.addEventListener("click", async () => {
+    node.querySelector(".save-prediction-btn")?.addEventListener("click", async event => {
+      const btn = event.currentTarget;
+      const statusBox = node.querySelector(".saved-status");
+
       const scorers = [
         node.querySelector('[data-own="scorer0"]').value,
         node.querySelector('[data-own="scorer1"]').value,
         node.querySelector('[data-own="scorer2"]').value
       ];
-      await savePrediction(match.id, {
-        scoreHome: node.querySelector('[data-own="scoreHome"]').value,
-        scoreAway: node.querySelector('[data-own="scoreAway"]').value,
-        scorers
-      });
+
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+      statusBox.textContent = "Saving prediction to cloud...";
+      statusBox.classList.remove("not-submitted");
+      statusBox.classList.add("submitted");
+
+      try {
+        await savePrediction(match.id, {
+          scoreHome: node.querySelector('[data-own="scoreHome"]').value,
+          scoreAway: node.querySelector('[data-own="scoreAway"]').value,
+          scorers
+        });
+
+        statusBox.textContent = "Your prediction is saved to the cloud. You can still edit until reveal.";
+        statusBox.classList.add("submitted");
+        statusBox.classList.remove("not-submitted");
+        btn.textContent = "Saved ✓";
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.textContent = "Save my prediction";
+        }, 900);
+      } catch (error) {
+        console.error("Save prediction failed:", error);
+        statusBox.textContent = `Save failed: ${error.message || "Unknown error"}`;
+        statusBox.classList.remove("submitted");
+        statusBox.classList.add("not-submitted");
+        setCloudStatus("Save failed", "offline");
+        btn.disabled = false;
+        btn.textContent = "Save my prediction";
+        alert(`Save failed: ${error.message || "Unknown error"}`);
+      }
     });
 
     node.querySelector(".reveal-btn").addEventListener("click", async event => {
