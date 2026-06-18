@@ -213,12 +213,14 @@ async function initialiseCloud() {
 
   unsubscribeConfig = onSnapshot(configRef(), snap => {
     if (snap.exists()) {
+      persistVisibleDraftsBeforeRender();
       configState = { ...defaultConfig(), ...snap.data() };
       render();
     }
   });
 
   unsubscribeMatches = onSnapshot(collection(db, "matches"), snapshot => {
+    persistVisibleDraftsBeforeRender();
     matches = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
     listenToPredictions();
     render();
@@ -237,6 +239,7 @@ function listenToPredictions() {
     if (ownKey) {
       const ownRef = doc(db, "matches", match.id, "predictions", ownKey);
       const unsubOwn = onSnapshot(ownRef, snap => {
+        persistVisibleDraftsBeforeRender();
         predictionsByMatch[match.id][ownKey] = snap.exists() ? { id: snap.id, ...snap.data() } : null;
         render();
       });
@@ -248,6 +251,7 @@ function listenToPredictions() {
         if (key === ownKey) return;
         const otherRef = doc(db, "matches", match.id, "predictions", key);
         const unsubOther = onSnapshot(otherRef, snap => {
+          persistVisibleDraftsBeforeRender();
           predictionsByMatch[match.id][key] = snap.exists() ? { id: snap.id, ...snap.data() } : null;
           render();
         });
@@ -393,7 +397,17 @@ async function revealAndCalculate(matchId, actualData) {
     updatedAt: serverTimestamp()
   });
 
+  const localIndex = matches.findIndex(m => m.id === matchId);
+  if (localIndex !== -1) {
+    matches[localIndex] = {
+      ...updatedMatch,
+      calculated: true,
+      summary
+    };
+  }
+
   setCloudStatus("Revealed and calculated", "online");
+  render();
   setTimeout(() => postToDiscord(matchId, true), 1000);
 }
 
@@ -612,6 +626,31 @@ function attachDraftListeners(card, matchId) {
   card.querySelectorAll("[data-own]").forEach(input => {
     input.addEventListener("input", () => savePredictionDraft(matchId, readPredictionForm(card)));
     input.addEventListener("change", () => savePredictionDraft(matchId, readPredictionForm(card)));
+  });
+}
+
+function persistVisibleDraftsBeforeRender() {
+  document.querySelectorAll(".match-card[data-match-id]").forEach(card => {
+    const matchId = card.dataset.matchId;
+    const rootMatch = matches.find(match => match.id === matchId);
+
+    if (!matchId || rootMatch?.revealed) return;
+
+    const scoreHome = card.querySelector('[data-own="scoreHome"]')?.value ?? "";
+    const scoreAway = card.querySelector('[data-own="scoreAway"]')?.value ?? "";
+    const scorer0 = card.querySelector('[data-own="scorer0"]')?.value ?? "";
+    const scorer1 = card.querySelector('[data-own="scorer1"]')?.value ?? "";
+    const scorer2 = card.querySelector('[data-own="scorer2"]')?.value ?? "";
+
+    const hasAnyDraftValue = scoreHome !== "" || scoreAway !== "" || scorer0 !== "" || scorer1 !== "" || scorer2 !== "";
+
+    if (hasAnyDraftValue) {
+      savePredictionDraft(matchId, {
+        scoreHome,
+        scoreAway,
+        scorers: [scorer0, scorer1, scorer2]
+      });
+    }
   });
 }
 
@@ -1018,6 +1057,47 @@ document.addEventListener("click", async event => {
     saveBtn.textContent = "Save my prediction";
     setCloudStatus("Save failed", "offline");
     alert(`Save failed: ${error.message || "Unknown error"}`);
+  }
+}, true);
+
+
+document.addEventListener("click", async event => {
+  const revealBtn = event.target.closest(".reveal-btn");
+  if (!revealBtn) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const card = revealBtn.closest(".match-card");
+  if (!card) {
+    alert("Could not find match card.");
+    return;
+  }
+
+  const matchId = card.dataset.matchId;
+  const actualHome = card.querySelector('[data-actual="actualHome"]')?.value ?? "";
+  const actualAway = card.querySelector('[data-actual="actualAway"]')?.value ?? "";
+
+  revealBtn.disabled = true;
+  revealBtn.textContent = "Revealing...";
+  setCloudStatus("Revealing prediction...", "online");
+
+  try {
+    await revealAndCalculate(matchId, {
+      actualHome,
+      actualAway,
+      actualScorers: getActualScorersFromNode(card)
+    });
+
+    clearPredictionDraft(matchId);
+    revealBtn.textContent = "Revealed ✓";
+    setCloudStatus("Prediction revealed and scores updated", "online");
+  } catch (error) {
+    console.error("Reveal failed:", error);
+    setCloudStatus("Reveal failed", "offline");
+    alert(`Reveal failed: ${error.message || "Unknown error"}`);
+    revealBtn.disabled = false;
+    revealBtn.textContent = "Reveal Prediction";
   }
 }, true);
 
