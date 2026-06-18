@@ -568,6 +568,53 @@ function fixtureHtml(match) {
   `;
 }
 
+function draftKey(matchId) {
+  return `predictionDraft:${currentProfile?.key || "unknown"}:${matchId}`;
+}
+
+function getPredictionDraft(matchId) {
+  try {
+    return JSON.parse(sessionStorage.getItem(draftKey(matchId)) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function savePredictionDraft(matchId, data) {
+  try {
+    sessionStorage.setItem(draftKey(matchId), JSON.stringify(data));
+  } catch {
+    // Ignore draft storage errors; cloud save still works.
+  }
+}
+
+function clearPredictionDraft(matchId) {
+  try {
+    sessionStorage.removeItem(draftKey(matchId));
+  } catch {
+    // Ignore.
+  }
+}
+
+function readPredictionForm(card) {
+  return {
+    scoreHome: card.querySelector('[data-own="scoreHome"]')?.value ?? "",
+    scoreAway: card.querySelector('[data-own="scoreAway"]')?.value ?? "",
+    scorers: [
+      card.querySelector('[data-own="scorer0"]')?.value ?? "",
+      card.querySelector('[data-own="scorer1"]')?.value ?? "",
+      card.querySelector('[data-own="scorer2"]')?.value ?? ""
+    ]
+  };
+}
+
+function attachDraftListeners(card, matchId) {
+  card.querySelectorAll("[data-own]").forEach(input => {
+    input.addEventListener("input", () => savePredictionDraft(matchId, readPredictionForm(card)));
+    input.addEventListener("change", () => savePredictionDraft(matchId, readPredictionForm(card)));
+  });
+}
+
 function renderMatchList(containerId, gameType) {
   const container = document.getElementById(containerId);
   const template = document.getElementById("matchTemplate");
@@ -594,6 +641,8 @@ function renderMatchList(containerId, gameType) {
     const otherPred = getPred(match.id, otherKey);
     const mySubmitted = !!match.submitted?.[currentProfile.key] || !!myPred;
     const otherSubmitted = !!match.submitted?.[otherKey];
+    const localDraft = getPredictionDraft(match.id);
+    const formSource = localDraft || myPred || null;
 
     node.querySelector(".other-name").textContent = otherName;
     node.querySelector(".other-name-back").textContent = `${otherName}'s prediction`;
@@ -607,16 +656,19 @@ function renderMatchList(containerId, gameType) {
     const saved = node.querySelector(".saved-status");
     saved.classList.toggle("submitted", mySubmitted);
     saved.classList.toggle("not-submitted", !mySubmitted);
-    saved.textContent = mySubmitted
-      ? "Your prediction is saved to the cloud. You can still edit until reveal."
-      : "No prediction saved yet.";
+    saved.textContent = localDraft
+      ? "You have an unsaved draft on this device."
+      : mySubmitted
+        ? "Your prediction is saved to the cloud. You can still edit until reveal."
+        : "No prediction saved yet.";
 
-    const existingMyScorers = myPred ? parseScorers(myPred.scorers) : [];
-    if (myPred && !match.revealed) {
-      node.querySelector('[data-own="scoreHome"]').value = myPred.scoreHome ?? "";
-      node.querySelector('[data-own="scoreAway"]').value = myPred.scoreAway ?? "";
+    const existingMyScorers = formSource ? parseScorers(formSource.scorers) : [];
+    if (formSource && !match.revealed) {
+      node.querySelector('[data-own="scoreHome"]').value = formSource.scoreHome ?? "";
+      node.querySelector('[data-own="scoreAway"]').value = formSource.scoreAway ?? "";
     }
     setupScorerPickers(node, match, existingMyScorers);
+    attachDraftListeners(node, match.id);
 
     node.querySelector('[data-actual="actualHome"]').value = match.actualHome ?? "";
     node.querySelector('[data-actual="actualAway"]').value = match.actualAway ?? "";
@@ -941,6 +993,8 @@ document.addEventListener("click", async event => {
         scorer2?.value ?? ""
       ]
     });
+
+    clearPredictionDraft(matchId);
 
     if (statusBox) {
       statusBox.textContent = "Your prediction is saved to the cloud. You can still edit until reveal.";
