@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#c8102e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="LFC Picks" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Dany vs Isa Prediction League</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="club-lockup">
+        <img class="crest-img" src="liverpool-logo.svg" alt="Liverpool FC logo" />
+        <div>
+          <p class="eyebrow">Dany vs Isa</p>
+          <h1>Prediction League</h1>
+          <p class="subtitle">Liverpool plays, do they win? And what about you?</p>
+        </div>
+      </div>
+      <div class="hero-actions account-actions">
+        <div id="accountBadge" class="account-badge">Signed out</div>
+        <button type="button" class="ghost" id="exportBtn">Export backup</button>
+        <button class="ghost" id="signOutBtn" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="panel auth-panel" id="authPanel">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">Private cloud save</p>
+          <h2>Sign in</h2>
+        </div>
+        <div id="cloudStatus" class="cloud-status">Not connected</div>
+      </div>
+
+      <form id="loginForm" class="login-form">
+        <input id="emailInput" type="email" placeholder="Email" autocomplete="email" required />
+        <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" required />
+        <button type="submit">Sign in</button>
+      </form>
+
+      <p class="muted small-note">This login panel disappears after you sign in.</p>
+    </section>
+
+    <main id="appMain" class="hidden-app">
+      <section class="score-grid" id="scoreboard"></section>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="lfc">Liverpool matches</button>
+        <button class="tab" data-tab="seasons">Seasons</button>
+        <button class="tab" data-tab="players">Liverpool squad</button>
+        <button class="tab" data-tab="other">Other matches</button>
+        <button class="tab" data-tab="history">History</button>
+      </nav>
+
+      <section class="tab-panel active" id="lfcPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Liverpool fixture</p>
+              <h2>Create match event</h2>
+            </div>
+          </div>
+
+          <form id="lfcMatchForm" class="match-form">
+            <div>
+              <label>Opponent</label>
+              <select id="lfcOpponentSelect" required></select>
+            </div>
+            <div>
+              <label>Match date</label>
+              <input id="lfcDateInput" type="date" />
+            </div>
+            <button type="submit">Create match</button>
+          </form>
+
+          <div class="inline-add">
+            <input id="newOpponentInput" placeholder="Add opponent, e.g. Benfica" />
+            <input id="newOpponentCodeInput" placeholder="Badge, e.g. BEN" maxlength="5" />
+            <button type="button" class="ghost" id="addOpponentBtn">Add opponent</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Open Liverpool matches</p>
+              <h2>Prediction events</h2>
+            </div>
+          </div>
+          <div class="notice">
+            You only enter and see your own prediction before reveal. The other prediction stays face down.
+          </div>
+          <div id="lfcMatches" class="match-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="otherPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Separate scoreboard</p>
+              <h2>Create other match</h2>
+            </div>
+          </div>
+          <form id="otherMatchForm" class="other-form">
+            <input id="otherHomeInput" placeholder="Home team" required />
+            <input id="otherAwayInput" placeholder="Away team" required />
+            <input id="otherDateInput" type="date" />
+            <button type="submit">Create match</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Open other matches</p>
+              <h2>Prediction events</h2>
+            </div>
+          </div>
+          <div id="otherMatches" class="match-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="seasonsPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Season manager</p>
+              <h2>Season scoreboards</h2>
+            </div>
+          </div>
+          <form id="seasonForm" class="manager-form">
+            <input id="seasonNameInput" placeholder="Season name, e.g. 2026-27" required />
+            <button type="submit">Create season</button>
+          </form>
+          <div id="seasonList" class="manager-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="playersPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Squad manager</p>
+              <h2>Liverpool scoring tiers</h2>
+            </div>
+          </div>
+          <form id="playerForm" class="manager-form">
+            <input id="playerName" placeholder="Player name" required />
+            <select id="playerTier">
+              <option value="1">Tier 1 - main scorer: 1 pt</option>
+              <option value="2">Tier 2 - regular scorer: 2 pts</option>
+              <option value="3">Tier 3 - occasional scorer: 3 pts</option>
+              <option value="4">Tier 4 - rare scorer: 4 pts</option>
+              <option value="5">Tier 5 - defender/very rare: 5 pts</option>
+              <option value="8">Tier 6 - keeper/chaos pick: 8 pts</option>
+            </select>
+            <button type="submit">Add player</button>
+          </form>
+          <p class="muted small-note">Liverpool matches use these tiers. Other matches use 1 point per correct scorer.</p>
+          <div id="playerList" class="manager-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="historyPanel">
+        <section class="panel">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Archive</p>
+              <h2>Revealed matches</h2>
+            </div>
+          </div>
+          <div id="history" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <template id="matchTemplate">
+    <article class="match-card">
+      <div class="match-card-header">
+        <div class="fixture"></div>
+        <div class="match-meta"></div>
+      </div>
+
+      <div class="event-grid">
+        <section class="event-panel own-panel">
+          <h3>Your prediction</h3>
+          <div class="saved-status"></div>
+          <div class="own-form">
+            <div class="score-row">
+              <input data-own="scoreHome" type="number" min="0" placeholder="Home/LFC" />
+              <span>-</span>
+              <input data-own="scoreAway" type="number" min="0" placeholder="Away/Opp" />
+            </div>
+            <div class="scorer-grid">
+              <input data-own="scorer0" placeholder="Scorer 1" />
+              <input data-own="scorer1" placeholder="Scorer 2" />
+              <input data-own="scorer2" placeholder="Scorer 3" />
+            </div>
+            <button type="button" class="save-prediction-btn">Save my prediction</button>
+          </div>
+          <div class="own-revealed"></div>
+        </section>
+
+        <section class="event-panel opponent-panel">
+          <div class="flip-card">
+            <div class="flip-inner">
+              <div class="flip-face flip-front">
+                <h3 class="other-name"></h3>
+                <div class="face-down">Prediction hidden</div>
+                <p class="muted">This card opens after reveal.</p>
+              </div>
+              <div class="flip-face flip-back">
+                <h3 class="other-name-back"></h3>
+                <div class="opponent-prediction-view"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="event-panel actual-panel">
+          <h3>Actual result</h3>
+          <div class="score-row">
+            <input data-actual="actualHome" type="number" min="0" placeholder="Home/LFC" />
+            <span>-</span>
+            <input data-actual="actualAway" type="number" min="0" placeholder="Away/Opp" />
+          </div>
+          <textarea data-actual="actualScorers" placeholder="Actual scorers, comma separated"></textarea>
+          <button type="button" class="reveal-btn">Reveal Prediction</button>
+          <button type="button" class="discord-btn ghost">Post to Discord</button>
+          <button type="button" class="delete-btn ghost danger">Delete match</button>
+        </section>
+      </div>
+
+      <div class="result-strip"></div>
+    </article>
+  </template>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
