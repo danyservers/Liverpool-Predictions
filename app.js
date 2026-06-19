@@ -396,23 +396,13 @@ function isExactScoreCorrect(prediction, match) {
   if (!prediction) return false;
   if (prediction.scoreHome === "" || prediction.scoreAway === "") return false;
 
-  const predHome = String(prediction.scoreHome);
-  const predAway = String(prediction.scoreAway);
-  const actualHome = String(match.actualHome);
-  const actualAway = String(match.actualAway);
-
-  // Normal internal Liverpool-first score comparison.
-  if (predHome === actualHome && predAway === actualAway) {
-    return true;
-  }
-
-  // Away-match safety: if the actual result was typed in displayed order
-  // (opponent first, Liverpool second), still award exact score correctly.
-  if (match.gameType === "lfc" && match.isAway === true) {
-    return predHome === actualAway && predAway === actualHome;
-  }
-
-  return false;
+  // Strict exact score only.
+  // Do not accept reversed scores. Example:
+  // predicted Liverpool 3-1 Arsenal must not match actual Liverpool 1-3 Arsenal.
+  return (
+    String(prediction.scoreHome) === String(match.actualHome) &&
+    String(prediction.scoreAway) === String(match.actualAway)
+  );
 }
 
 async function createLfcMatch(opponentName, date, isAway = false) {
