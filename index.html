@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Dany vs Isa Prediction League</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css?v=22" />
+  <link rel="stylesheet" href="style.css?v=23" />
 </head>
 <body>
   <div class="app-shell">
@@ -78,7 +78,10 @@
           <form id="lfcMatchForm" class="match-form">
             <div>
               <label>Opponent</label>
-              <input id="lfcOpponentSelect" list="lfcOpponentOptions" placeholder="Search opponent" required />
+              <div class="combo-box">
+                <input id="lfcOpponentSelect" list="lfcOpponentOptions" placeholder="Search or choose opponent" required autocomplete="off" />
+                <div class="combo-menu" id="lfcOpponentMenu"></div>
+              </div>
             </div>
             <div>
               <label>Match date</label>
@@ -127,8 +130,14 @@
             </div>
           </div>
           <form id="otherMatchForm" class="other-form">
-            <input id="otherHomeSelect" list="otherTeamOptions" placeholder="Search home team" required />
-            <input id="otherAwaySelect" list="otherTeamOptions" placeholder="Search away team" required />
+            <div class="combo-box">
+              <input id="otherHomeSelect" list="otherTeamOptions" placeholder="Search or choose home team" required autocomplete="off" />
+              <div class="combo-menu" id="otherHomeMenu"></div>
+            </div>
+            <div class="combo-box">
+              <input id="otherAwaySelect" list="otherTeamOptions" placeholder="Search or choose away team" required autocomplete="off" />
+              <div class="combo-menu" id="otherAwayMenu"></div>
+            </div>
             <input id="otherDateInput" type="date" />
             <button type="submit">Create match</button>
           </form>
@@ -319,7 +328,7 @@
   <datalist id="lfcPlayerOptions"></datalist>
   <datalist id="otherPlayerOptions"></datalist>
 
-  <script type="module" src="firebase-config.js?v=22"></script>
-  <script type="module" src="app.js?v=22"></script>
+  <script type="module" src="firebase-config.js?v=23"></script>
+  <script type="module" src="app.js?v=23"></script>
 </body>
 </html>

@@ -524,3 +524,76 @@ input[list]::-webkit-calendar-picker-indicator {
     flex: 1;
   }
 }
+
+
+/* v23 searchable team combo + tighter header */
+.combo-box {
+  position: relative;
+  width: 100%;
+}
+
+.combo-menu {
+  display: none;
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(24,24,29,.98);
+  box-shadow: var(--shadow);
+  padding: 6px;
+}
+
+.combo-menu.open {
+  display: grid;
+  gap: 4px;
+}
+
+.combo-option {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+}
+
+.combo-option:hover {
+  background: rgba(255,255,255,.08);
+}
+
+.combo-option small,
+.combo-empty {
+  color: var(--muted);
+}
+
+.combo-empty {
+  padding: 10px 12px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem,4.4vw,3.45rem);
+}
+
+.account-actions button,
+.account-actions .import-label,
+.account-badge {
+  padding: 9px 12px;
+  min-height: 40px;
+  font-size: .9rem;
+}
+
+.account-actions {
+  min-width: 300px;
+}
+
+.backup-row {
+  margin-top: 8px;
+}
