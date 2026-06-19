@@ -948,6 +948,38 @@ function attachActualDraftListeners(card, matchId) {
   });
 }
 
+function setupScorerPickers(node, match, existingScorers = []) {
+  updatePlayerDatalists();
+
+  const scorerFields = [
+    node.querySelector('[data-own="scorer0"]'),
+    node.querySelector('[data-own="scorer1"]'),
+    node.querySelector('[data-own="scorer2"]')
+  ];
+
+  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
+
+  scorerFields.forEach((field, index) => {
+    if (!field) return;
+
+    // If the template already has an input, keep it and only configure it.
+    const input = field.tagName?.toLowerCase() === "input"
+      ? field
+      : document.createElement("input");
+
+    input.dataset.own = field.dataset.own;
+    input.setAttribute("list", listId);
+    input.placeholder = `Search scorer ${index + 1}`;
+    input.autocomplete = "off";
+    input.value = existingScorers[index] || "";
+
+    if (input !== field) {
+      field.replaceWith(input);
+    }
+  });
+}
+
+
 function readPredictionForm(card) {
   return {
     scoreHome: card.querySelector('[data-own="scoreHome"]')?.value ?? "",

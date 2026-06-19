@@ -805,3 +805,10 @@ input[list]::-webkit-calendar-picker-indicator {
   border-color: rgba(89,255,150,.55);
   box-shadow: 0 0 0 1px rgba(89,255,150,.22);
 }
+
+
+/* v30 scorer picker restore */
+.scorer-grid input[list],
+.searchable-scorers input[list] {
+  min-height: 46px;
+}
