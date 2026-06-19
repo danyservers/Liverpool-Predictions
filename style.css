@@ -812,3 +812,14 @@ input[list]::-webkit-calendar-picker-indicator {
 .searchable-scorers input[list] {
   min-height: 46px;
 }
+
+
+/* v31 actual scorer picker restore */
+.actual-scorer-dropdowns.searchable-scorers {
+  display: grid;
+  gap: 10px;
+}
+
+.actual-scorer-dropdowns.searchable-scorers input[list] {
+  min-height: 46px;
+}

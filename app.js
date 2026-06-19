@@ -933,6 +933,52 @@ function clearActualDraft(matchId) {
   }
 }
 
+function setupActualScorerPicker(node, match, existingActualScorers = []) {
+  updatePlayerDatalists();
+
+  const actualField = node.querySelector('[data-actual="actualScorers"]');
+  if (!actualField) return;
+
+  // Avoid double-wrapping if this function is ever called again on the same node.
+  if (actualField.dataset.actual === "actualScorersGroup") return;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "actual-scorer-dropdowns searchable-scorers";
+  wrapper.dataset.actual = "actualScorersGroup";
+
+  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
+  const scorers = Array.isArray(existingActualScorers)
+    ? existingActualScorers
+    : parseScorers(existingActualScorers);
+
+  for (let i = 0; i < 6; i++) {
+    const input = document.createElement("input");
+    input.dataset.actualScorerIndex = String(i);
+    input.setAttribute("list", listId);
+    input.placeholder = `Search actual scorer ${i + 1}`;
+    input.autocomplete = "off";
+    input.value = scorers[i] || "";
+    wrapper.appendChild(input);
+  }
+
+  actualField.replaceWith(wrapper);
+}
+
+function getActualScorersFromNode(node) {
+  const group = node.querySelector('[data-actual="actualScorersGroup"]');
+
+  if (group) {
+    return Array.from(group.querySelectorAll("input, select"))
+      .map(field => normaliseName(field.value || ""))
+      .filter(Boolean);
+  }
+
+  const field = node.querySelector('[data-actual="actualScorers"]');
+  if (!field) return [];
+
+  return parseScorers(field.value);
+}
+
 function readActualForm(card) {
   return {
     actualHome: card.querySelector('[data-actual="actualHome"]')?.value ?? "",
