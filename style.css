@@ -1930,3 +1930,181 @@ button[type="submit"],
     min-height: auto;
   }
 }
+
+
+/* ==========================================================
+   v40 REAL background image override
+   This intentionally forces the actual uploaded photos to show.
+   Images are root-level, not hidden inside assets/.
+   ========================================================== */
+
+/* Full-page Liverpool Squad background: obvious dressing room image */
+body.squad-background {
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.58)),
+    url("squad-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  background-color: #05060a !important;
+}
+
+body.squad-background .hero,
+body.squad-background .tabs,
+body.squad-background .stat-card,
+body.squad-background .panel {
+  background: rgba(5, 6, 10, .58) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  backdrop-filter: blur(8px) saturate(1.15) !important;
+}
+
+/* Liverpool Matches page background should also show Anfield faintly */
+body.lfc-background {
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.72)),
+    url("lfc-create-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  background-color: #05060a !important;
+}
+
+/* Create match event: the stadium photo should be unmistakable */
+.lfc-create-panel {
+  min-height: 360px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,.48), rgba(0,0,0,.20), rgba(0,0,0,.55)),
+    url("lfc-create-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center 46% !important;
+  background-repeat: no-repeat !important;
+  background-color: #05060a !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.48) !important;
+}
+
+.lfc-create-panel::before {
+  content: "ANFIELD" !important;
+  position: absolute !important;
+  right: 26px !important;
+  top: 14px !important;
+  z-index: 0 !important;
+  font-size: clamp(3.2rem, 8vw, 7.5rem) !important;
+  color: rgba(255,255,255,.12) !important;
+  pointer-events: none !important;
+}
+
+.lfc-create-panel::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(224,11,59,.20), transparent 34%),
+    linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.42)) !important;
+}
+
+.lfc-create-panel > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Make create-match controls sit like a glass bar on the photo */
+#lfcMatchForm {
+  padding: 14px !important;
+  border-radius: 24px !important;
+  background: rgba(3, 5, 10, .58) !important;
+  border: 1px solid rgba(255,255,255,.26) !important;
+  backdrop-filter: blur(9px) saturate(1.1) !important;
+}
+
+/* Open Liverpool match cards: strong crowd photo */
+.lfc-open-card {
+  min-height: 430px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,.58), rgba(0,0,0,.24), rgba(0,0,0,.66)),
+    url("lfc-open-match-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-color: #05060a !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.52) !important;
+}
+
+.lfc-open-card::before {
+  content: "MATCHDAY" !important;
+  position: absolute !important;
+  right: 24px !important;
+  top: 16px !important;
+  z-index: 0 !important;
+  font-size: clamp(3rem, 8vw, 7.2rem) !important;
+  color: rgba(255,255,255,.13) !important;
+  pointer-events: none !important;
+}
+
+.lfc-open-card::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 18% 15%, rgba(224,11,59,.24), transparent 32%),
+    linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.48)) !important;
+}
+
+.lfc-open-card > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Force input readability over photos */
+.lfc-create-panel input,
+.lfc-create-panel select,
+.lfc-create-panel textarea,
+.lfc-create-panel .smart-picker-input,
+.lfc-create-panel .smart-picker-trigger,
+.lfc-open-card input,
+.lfc-open-card select,
+.lfc-open-card textarea,
+.lfc-open-card .smart-picker-input,
+.lfc-open-card .smart-picker-trigger {
+  background: rgba(8, 10, 16, .88) !important;
+  border-color: rgba(255,255,255,.30) !important;
+  color: #fff !important;
+}
+
+/* Remove overly dark same-looking panels inside image sections */
+.lfc-create-panel .manager-toggle-row,
+.lfc-open-card .event-panel,
+.lfc-open-card .prediction-card,
+.lfc-open-card .card {
+  background: rgba(3, 5, 10, .56) !important;
+  border-color: rgba(255,255,255,.24) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Mobile: keep images visible without fixed background jank */
+@media(max-width: 760px) {
+  body.squad-background,
+  body.lfc-background {
+    background-attachment: scroll !important;
+  }
+
+  .lfc-create-panel {
+    min-height: 420px !important;
+    background-position: center center !important;
+  }
+
+  .lfc-open-card {
+    min-height: auto !important;
+  }
+}
