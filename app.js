@@ -1407,20 +1407,48 @@ function renderHistory() {
   });
 }
 
+function updatePlayerDatalists() {
+  const lfcList = document.getElementById("lfcPlayerOptions");
+  const otherList = document.getElementById("otherPlayerOptions");
+
+  if (lfcList) {
+    lfcList.innerHTML = [...(configState.players || [])]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
+      .join("");
+  }
+
+  if (otherList) {
+    otherList.innerHTML = [...(configState.otherPlayers || [])]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
+      .join("");
+  }
+}
+
+function safeRenderStep(name, fn) {
+  try {
+    fn();
+  } catch (error) {
+    console.error(`Render step failed: ${name}`, error);
+  }
+}
+
 function render() {
   if (!currentProfile) return;
-  updatePlayerDatalists();
-  renderScoreboard();
-  renderOpponentSelect();
-  renderMatchList("lfcMatches", "lfc");
-  renderMatchList("otherMatches", "other");
-  renderPlayers();
-  renderOtherPlayers();
-  renderOtherTeamSelects();
-  renderOtherTeamList();
-  renderOtherScoreboard();
-  renderSeasons();
-  renderHistory();
+
+  safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
+  safeRenderStep("renderScoreboard", renderScoreboard);
+  safeRenderStep("renderOpponentSelect", renderOpponentSelect);
+  safeRenderStep("renderMatchList lfc", () => renderMatchList("lfcMatches", "lfc"));
+  safeRenderStep("renderMatchList other", () => renderMatchList("otherMatches", "other"));
+  safeRenderStep("renderPlayers", renderPlayers);
+  safeRenderStep("renderOtherPlayers", renderOtherPlayers);
+  safeRenderStep("renderOtherTeamSelects", renderOtherTeamSelects);
+  safeRenderStep("renderOtherTeamList", renderOtherTeamList);
+  safeRenderStep("renderOtherScoreboard", renderOtherScoreboard);
+  safeRenderStep("renderSeasons", renderSeasons);
+  safeRenderStep("renderHistory", renderHistory);
 }
 
 async function exportBackup() {

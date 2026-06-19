@@ -793,3 +793,9 @@ input[list]::-webkit-calendar-picker-indicator {
 #otherTeamsManager {
   margin-top: 12px;
 }
+
+
+/* v28 repair note: keep smart picker above panels */
+.smart-picker-menu {
+  z-index: 999;
+}
