@@ -336,3 +336,110 @@ input:focus,textarea:focus,select:focus{border-color:rgba(212,175,55,.8)}
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v18 summary polish */
+.actual-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.actual-badge {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(212,175,55,.45);
+  color: var(--gold);
+  font-weight: 1000;
+  background: rgba(212,175,55,.1);
+  white-space: nowrap;
+}
+
+.summary-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.reveal-player-card .summary-points {
+  font-size: 1.8rem;
+}
+
+.scorer-summary-title {
+  margin-top: 12px;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-weight: 900;
+  font-size: .9rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.breakdown-text {
+  margin-top: 10px;
+  line-height: 1.35;
+}
+
+.summary-line.hit {
+  background: rgba(47,167,91,.08);
+  margin-inline: -6px;
+  padding-inline: 6px;
+  border-radius: 10px;
+}
+
+.summary-line.miss {
+  background: rgba(200,16,46,.06);
+  margin-inline: -6px;
+  padding-inline: 6px;
+  border-radius: 10px;
+}
+
+@media(max-width:760px){
+  .actual-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+/* v19 other matches polish */
+.collapsible-content.collapsed {
+  display: none;
+}
+
+.compact-list {
+  margin-top: 12px;
+}
+
+.compact-item {
+  padding: 10px 12px;
+}
+
+.other-form select {
+  min-height: 46px;
+}
+
+#otherPanel .manager-list {
+  max-height: 440px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+
+/* v20 import/export */
+.import-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-weight: 850;
+}
+
+.import-label input {
+  display: none;
+}

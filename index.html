@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Dany vs Isa Prediction League</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css?v=17" />
+  <link rel="stylesheet" href="style.css?v=20" />
 </head>
 <body>
   <div class="app-shell">
@@ -25,6 +25,10 @@
       <div class="hero-actions account-actions">
         <div id="accountBadge" class="account-badge">Signed out</div>
         <button type="button" class="ghost" id="exportBtn">Export backup</button>
+        <label class="ghost import-label">
+          Import backup
+          <input type="file" id="importBackupFile" accept="application/json" />
+        </label>
         <button class="ghost" id="signOutBtn" type="button">Sign out</button>
       </div>
     </header>
@@ -52,8 +56,8 @@
 
       <nav class="tabs">
         <button class="tab active" data-tab="lfc">Liverpool matches</button>
-        <button class="tab" data-tab="seasons">Seasons</button>
         <button class="tab" data-tab="players">Liverpool squad</button>
+        <button class="tab" data-tab="seasons">Seasons</button>
         <button class="tab" data-tab="other">Other matches</button>
         <button class="tab" data-tab="history">History</button>
       </nav>
@@ -119,11 +123,17 @@
             </div>
           </div>
           <form id="otherMatchForm" class="other-form">
-            <input id="otherHomeInput" placeholder="Home team, e.g. Norway" required />
-            <input id="otherAwayInput" placeholder="Away team, e.g. Spain" required />
+            <select id="otherHomeSelect" required></select>
+            <select id="otherAwaySelect" required></select>
             <input id="otherDateInput" type="date" />
             <button type="submit">Create match</button>
           </form>
+          <div class="inline-add">
+            <input id="newOtherTeamInput" placeholder="Add other team, e.g. Denmark" />
+            <input id="newOtherTeamCodeInput" placeholder="Badge, e.g. DEN" maxlength="5" />
+            <button type="button" class="ghost" id="addOtherTeamBtn">Add team</button>
+          </div>
+          <div id="otherTeamList" class="manager-list compact-list"></div>
         </section>
 
         <section class="panel">
@@ -132,21 +142,24 @@
               <p class="eyebrow">Other matches players</p>
               <h2>Player scoring tiers</h2>
             </div>
+            <button type="button" class="ghost" id="toggleOtherPlayersBtn">Open player tiers</button>
           </div>
-          <form id="otherPlayerForm" class="manager-form">
-            <input id="otherPlayerName" placeholder="Player name" required />
-            <select id="otherPlayerTier">
-              <option value="1">Tier 1 - main scorer: 1 pt</option>
-              <option value="2">Tier 2 - regular scorer: 2 pts</option>
-              <option value="3">Tier 3 - occasional scorer: 3 pts</option>
-              <option value="4">Tier 4 - rare scorer: 4 pts</option>
-              <option value="5">Tier 5 - defender/very rare: 5 pts</option>
-              <option value="8">Tier 6 - keeper/chaos pick: 8 pts</option>
-            </select>
-            <button type="submit">Add player</button>
-          </form>
-          <p class="muted small-note">These players only apply to Other Matches. Default list includes Norway and Spain players.</p>
-          <div id="otherPlayerList" class="manager-list"></div>
+          <div id="otherPlayersManager" class="collapsible-content collapsed">
+            <form id="otherPlayerForm" class="manager-form">
+              <input id="otherPlayerName" placeholder="Player name" required />
+              <select id="otherPlayerTier">
+                <option value="1">Tier 1 - main scorer: 1 pt</option>
+                <option value="2">Tier 2 - regular scorer: 2 pts</option>
+                <option value="3">Tier 3 - occasional scorer: 3 pts</option>
+                <option value="4">Tier 4 - rare scorer: 4 pts</option>
+                <option value="5">Tier 5 - defender/very rare: 5 pts</option>
+                <option value="8">Tier 6 - keeper/chaos pick: 8 pts</option>
+              </select>
+              <button type="submit">Add player</button>
+            </form>
+            <p class="muted small-note">These players only apply to Other Matches. Default list includes Norway and Spain players.</p>
+            <div id="otherPlayerList" class="manager-list"></div>
+          </div>
         </section>
 
         <section class="panel">
@@ -290,7 +303,7 @@
     </div>
   </div>
 
-  <script type="module" src="firebase-config.js?v=17"></script>
-  <script type="module" src="app.js?v=17"></script>
+  <script type="module" src="firebase-config.js?v=20"></script>
+  <script type="module" src="app.js?v=20"></script>
 </body>
 </html>

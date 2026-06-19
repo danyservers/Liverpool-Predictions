@@ -86,11 +86,25 @@ function cryptoId() {
   return String(Date.now() + Math.random());
 }
 
+const DEFAULT_OTHER_TEAMS = [
+  { id: cryptoId(), name: "Norway", code: "NOR" },
+  { id: cryptoId(), name: "Spain", code: "ESP" },
+  { id: cryptoId(), name: "Denmark", code: "DEN" },
+  { id: cryptoId(), name: "Sweden", code: "SWE" },
+  { id: cryptoId(), name: "England", code: "ENG" },
+  { id: cryptoId(), name: "France", code: "FRA" },
+  { id: cryptoId(), name: "Germany", code: "GER" },
+  { id: cryptoId(), name: "Italy", code: "ITA" },
+  { id: cryptoId(), name: "Portugal", code: "POR" },
+  { id: cryptoId(), name: "Netherlands", code: "NED" }
+];
+
 const defaultConfig = () => ({
   activeSeasonId: DEFAULT_SEASON_ID,
   seasons: [{ id: DEFAULT_SEASON_ID, name: DEFAULT_SEASON_ID }],
   players: DEFAULT_PLAYERS,
   otherPlayers: DEFAULT_OTHER_PLAYERS,
+  otherTeams: DEFAULT_OTHER_TEAMS,
   opponents: DEFAULT_OPPONENTS
 });
 
@@ -354,13 +368,17 @@ async function createLfcMatch(opponent, date) {
 }
 
 async function createOtherMatch(home, away, date) {
+  const homeTeam = (configState.otherTeams || []).find(t => t.name === home);
+  const awayTeam = (configState.otherTeams || []).find(t => t.name === away);
+
   await addDoc(collection(db, "matches"), {
     gameType: "other",
     seasonId: configState.activeSeasonId,
     home: normaliseName(home),
     away: normaliseName(away),
+    homeCode: homeTeam?.code || normaliseName(home).slice(0, 3).toUpperCase(),
     opponent: normaliseName(away),
-    opponentCode: normaliseName(away).slice(0, 3).toUpperCase(),
+    opponentCode: awayTeam?.code || normaliseName(away).slice(0, 3).toUpperCase(),
     date,
     actualHome: "",
     actualAway: "",
@@ -402,9 +420,11 @@ async function revealAndCalculate(matchId, actualData) {
 
   // Then fetch both predictions and calculate using fresh data.
   const predictionSnap = await getDocs(collection(db, "matches", matchId, "predictions"));
+  const freshPredictions = {};
   predictionsByMatch[matchId] = {};
   predictionSnap.docs.forEach(d => {
-    predictionsByMatch[matchId][d.id] = { id: d.id, ...d.data() };
+    freshPredictions[d.id] = { id: d.id, ...d.data() };
+    predictionsByMatch[matchId][d.id] = freshPredictions[d.id];
   });
 
   const updatedMatch = {
@@ -434,7 +454,7 @@ async function revealAndCalculate(matchId, actualData) {
 
   setCloudStatus("Revealed and calculated", "online");
   render();
-  showRoundSummary(matches[localIndex] || { ...updatedMatch, calculated: true, summary });
+  showRoundSummary(matches[localIndex] || { ...updatedMatch, calculated: true, summary }, freshPredictions);
   setTimeout(() => postToDiscord(matchId, true), 1000);
 }
 
@@ -499,6 +519,60 @@ function totals(gameType, seasonId = null) {
     acc.played++;
     return acc;
   }, { dany: 0, isa: 0, played: 0 });
+}
+
+function renderOtherTeamSelects() {
+  const homeSelect = document.getElementById("otherHomeSelect");
+  const awaySelect = document.getElementById("otherAwaySelect");
+  if (!homeSelect || !awaySelect) return;
+
+  const oldHome = homeSelect.value;
+  const oldAway = awaySelect.value;
+  const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
+  const options = `<option value="">Choose team</option>` + teams.map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.name)}</option>`).join("");
+
+  homeSelect.innerHTML = options;
+  awaySelect.innerHTML = options;
+  homeSelect.value = oldHome;
+  awaySelect.value = oldAway;
+}
+
+function renderOtherTeamList() {
+  const list = document.getElementById("otherTeamList");
+  if (!list) return;
+
+  list.innerHTML = "";
+  [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name)).forEach(team => {
+    const item = document.createElement("div");
+    item.className = "manager-item compact-item";
+    item.innerHTML = `
+      <div>
+        <strong>${escapeHtml(team.name)}</strong>
+        <div class="muted">${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</div>
+      </div>
+      <div class="manager-item-actions">
+        <button type="button" class="ghost rename">Rename</button>
+        <button type="button" class="ghost danger remove">Remove</button>
+      </div>
+    `;
+
+    item.querySelector(".rename").addEventListener("click", async () => {
+      const nextName = prompt("Team name:", team.name);
+      if (!nextName) return;
+      const nextCode = prompt("Badge code:", team.code || nextName.slice(0,3).toUpperCase());
+      team.name = normaliseName(nextName);
+      team.code = normaliseName(nextCode || nextName.slice(0,3)).toUpperCase();
+      await saveConfig({ otherTeams: configState.otherTeams });
+    });
+
+    item.querySelector(".remove").addEventListener("click", async () => {
+      if (!confirm(`Remove ${team.name}?`)) return;
+      configState.otherTeams = (configState.otherTeams || []).filter(t => t.id !== team.id);
+      await saveConfig({ otherTeams: configState.otherTeams });
+    });
+
+    list.appendChild(item);
+  });
 }
 
 function renderOtherScoreboard() {
@@ -619,9 +693,9 @@ function fixtureHtml(match) {
   }
 
   return `
-    <div class="team"><div class="badge opponent-badge">${escapeHtml(match.home.slice(0,3).toUpperCase())}</div><strong>${escapeHtml(match.home)}</strong></div>
+    <div class="team"><div class="badge opponent-badge">${escapeHtml(match.homeCode || match.home.slice(0,3).toUpperCase())}</div><strong>${escapeHtml(match.home)}</strong></div>
     <span class="versus">vs</span>
-    <div class="team"><div class="badge opponent-badge">${escapeHtml(match.away.slice(0,3).toUpperCase())}</div><strong>${escapeHtml(match.away)}</strong></div>
+    <div class="team"><div class="badge opponent-badge">${escapeHtml(match.opponentCode || match.away.slice(0,3).toUpperCase())}</div><strong>${escapeHtml(match.away)}</strong></div>
   `;
 }
 
@@ -716,6 +790,13 @@ function renderMatchList(containerId, gameType) {
     root.dataset.matchId = match.id;
     node.querySelector(".fixture").innerHTML = fixtureHtml(match);
     node.querySelector(".match-meta").textContent = match.date || "No date set";
+
+    const leftScoreLabel = match.gameType === "lfc" ? "LFC" : "Home";
+    const rightScoreLabel = match.gameType === "lfc" ? "Opponent" : "Away";
+    node.querySelector('[data-own="scoreHome"]').placeholder = leftScoreLabel;
+    node.querySelector('[data-own="scoreAway"]').placeholder = rightScoreLabel;
+    node.querySelector('[data-actual="actualHome"]').placeholder = leftScoreLabel;
+    node.querySelector('[data-actual="actualAway"]').placeholder = rightScoreLabel;
 
     const otherKey = currentProfile.key === "dany" ? "isa" : "dany";
     const otherName = otherKey === "dany" ? "Dany" : "Isa";
@@ -961,6 +1042,9 @@ function renderSeasons() {
 function predictionDetailHtml(label, pred, match, score) {
   const predictedScorers = parseScorers(pred?.scorers);
   const actualScorers = parseScorers(match.actualScorers).map(s => s.toLowerCase());
+  const exact = pred &&
+    String(pred.scoreHome) === String(match.actualHome) &&
+    String(pred.scoreAway) === String(match.actualAway);
 
   const scorerRows = predictedScorers.length
     ? predictedScorers.map(player => {
@@ -968,39 +1052,38 @@ function predictionDetailHtml(label, pred, match, score) {
         const pts = hit ? getPlayerPoints(player, match.gameType) : 0;
         return `
           <div class="summary-line ${hit ? "hit" : "miss"}">
-            <span>${escapeHtml(player)}</span>
+            <span>${hit ? "✓" : "✕"} ${escapeHtml(player)}</span>
             <strong>${hit ? `+${pts}` : "0"}</strong>
           </div>
         `;
       }).join("")
     : `<div class="summary-line miss"><span>No scorers picked</span><strong>0</strong></div>`;
 
-  const exact = pred &&
-    String(pred.scoreHome) === String(match.actualHome) &&
-    String(pred.scoreAway) === String(match.actualAway);
-
   return `
     <div class="summary-card reveal-player-card">
-      <h3>${escapeHtml(label)}</h3>
-      <div class="summary-points">${score.points} pts</div>
+      <div class="summary-card-head">
+        <h3>${escapeHtml(label)}</h3>
+        <div class="summary-points">${score.points} pts</div>
+      </div>
       <div class="pred-line"><strong>Prediction:</strong> ${escapeHtml(pred?.scoreHome ?? "-")} - ${escapeHtml(pred?.scoreAway ?? "-")}</div>
       <div class="summary-line ${exact ? "hit" : "miss"}">
-        <span>Exact score</span>
+        <span>${exact ? "✓" : "✕"} Exact score</span>
         <strong>${exact ? "+5" : "0"}</strong>
       </div>
+      <div class="scorer-summary-title">Goalscorer picks</div>
       ${scorerRows}
-      <p class="muted">${escapeHtml(score.breakdown.join(", ") || "No scoring picks")}</p>
+      <p class="muted breakdown-text">${escapeHtml(score.breakdown.join(", ") || "No scoring picks")}</p>
     </div>
   `;
 }
 
-function showRoundSummary(match) {
+function showRoundSummary(match, predictionMap = null) {
   const modal = document.getElementById("roundSummaryModal");
   const content = document.getElementById("roundSummaryContent");
   if (!modal || !content) return;
 
-  const danyPred = getPred(match.id, "dany");
-  const isaPred = getPred(match.id, "isa");
+  const danyPred = predictionMap?.dany || getPred(match.id, "dany");
+  const isaPred = predictionMap?.isa || getPred(match.id, "isa");
   const danyScore = scorePrediction(danyPred, match);
   const isaScore = scorePrediction(isaPred, match);
   const summary = match.summary || {
@@ -1013,8 +1096,11 @@ function showRoundSummary(match) {
 
   content.innerHTML = `
     <div class="actual-summary">
-      <h3>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</h3>
-      <p>Actual scorers: <strong>${escapeHtml(parseScorers(match.actualScorers).join(", ") || "-")}</strong></p>
+      <div>
+        <h3>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</h3>
+        <p>Actual scorers: <strong>${escapeHtml(parseScorers(match.actualScorers).join(", ") || "-")}</strong></p>
+      </div>
+      <div class="actual-badge">${escapeHtml(match.gameType === "lfc" ? "Liverpool" : "Other")}</div>
     </div>
     <div class="summary-cards reveal-summary-grid">
       ${predictionDetailHtml("Dany", danyPred, match, danyScore)}
@@ -1022,10 +1108,10 @@ function showRoundSummary(match) {
       <div class="summary-card winner-card">
         <h3>Round result</h3>
         <div class="summary-points">${escapeHtml(summary.roundWinner || "-")}</div>
-        <p>Dany: <strong>${summary.danyPoints ?? danyScore.points}</strong> pts</p>
-        <p>Isa: <strong>${summary.isaPoints ?? isaScore.points}</strong> pts</p>
-        <p>Season leader: <strong>${escapeHtml(summary.seasonLeader || "-")}</strong></p>
-        <p>Overall leader: <strong>${escapeHtml(summary.overallLeader || "-")}</strong></p>
+        <div class="summary-line"><span>Dany</span><strong>${summary.danyPoints ?? danyScore.points} pts</strong></div>
+        <div class="summary-line"><span>Isa</span><strong>${summary.isaPoints ?? isaScore.points} pts</strong></div>
+        <div class="summary-line"><span>Season leader</span><strong>${escapeHtml(summary.seasonLeader || "-")}</strong></div>
+        <div class="summary-line"><span>Overall leader</span><strong>${escapeHtml(summary.overallLeader || "-")}</strong></div>
       </div>
     </div>
   `;
@@ -1112,19 +1198,115 @@ function render() {
   renderMatchList("otherMatches", "other");
   renderPlayers();
   renderOtherPlayers();
+  renderOtherTeamSelects();
+  renderOtherTeamList();
   renderOtherScoreboard();
   renderSeasons();
   renderHistory();
 }
 
-function exportBackup() {
-  const blob = new Blob([JSON.stringify({ configState, matches, predictionsByMatch }, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `prediction-league-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+async function exportBackup() {
+  try {
+    const allMatches = [];
+    const allPredictions = {};
+
+    const matchSnap = await getDocs(collection(db, "matches"));
+    matchSnap.docs.forEach(matchDoc => {
+      allMatches.push({ id: matchDoc.id, ...matchDoc.data() });
+    });
+
+    for (const match of allMatches) {
+      const predictionSnap = await getDocs(collection(db, "matches", match.id, "predictions"));
+      allPredictions[match.id] = {};
+      predictionSnap.docs.forEach(predDoc => {
+        allPredictions[match.id][predDoc.id] = { id: predDoc.id, ...predDoc.data() };
+      });
+    }
+
+    const backup = {
+      version: 20,
+      exportedAt: new Date().toISOString(),
+      configState,
+      matches: allMatches,
+      predictionsByMatch: allPredictions
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `prediction-league-full-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    setCloudStatus("Backup exported", "online");
+  } catch (error) {
+    console.error("Export failed:", error);
+    alert(`Export failed: ${error.message || "Unknown error"}`);
+  }
+}
+
+async function importBackupFile(file) {
+  if (!file) return;
+
+  const ok = confirm(
+    "Import backup? This will replace your current editable config, matches, predictions and history with the backup file."
+  );
+
+  if (!ok) return;
+
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text);
+
+    if (!backup || !backup.configState || !Array.isArray(backup.matches)) {
+      throw new Error("This does not look like a valid Prediction League backup file.");
+    }
+
+    setCloudStatus("Importing backup...", "online");
+
+    await setDoc(configRef(), {
+      ...backup.configState,
+      updatedAt: serverTimestamp()
+    }, { merge: false });
+
+    // Delete current matches and their prediction subdocuments.
+    const currentMatchSnap = await getDocs(collection(db, "matches"));
+    for (const currentMatch of currentMatchSnap.docs) {
+      const predictionSnap = await getDocs(collection(db, "matches", currentMatch.id, "predictions"));
+      await Promise.all(predictionSnap.docs.map(predDoc =>
+        deleteDoc(doc(db, "matches", currentMatch.id, "predictions", predDoc.id))
+      ));
+      await deleteDoc(doc(db, "matches", currentMatch.id));
+    }
+
+    // Restore matches and predictions.
+    for (const match of backup.matches) {
+      const { id, ...matchData } = match;
+      if (!id) continue;
+
+      await setDoc(doc(db, "matches", id), {
+        ...matchData,
+        restoredAt: serverTimestamp()
+      }, { merge: false });
+
+      const predictions = backup.predictionsByMatch?.[id] || {};
+      for (const [predictionId, predictionData] of Object.entries(predictions)) {
+        const { id: ignoredPredictionId, ...cleanPredictionData } = predictionData || {};
+        await setDoc(doc(db, "matches", id, "predictions", predictionId), cleanPredictionData, { merge: false });
+      }
+    }
+
+    setCloudStatus("Backup imported", "online");
+    alert("Backup imported successfully.");
+  } catch (error) {
+    console.error("Import failed:", error);
+    setCloudStatus("Import failed", "offline");
+    alert(`Import failed: ${error.message || "Unknown error"}`);
+  } finally {
+    const input = document.getElementById("importBackupFile");
+    if (input) input.value = "";
+  }
 }
 
 function escapeHtml(value) {
@@ -1150,9 +1332,22 @@ document.getElementById("lfcMatchForm").addEventListener("submit", async event =
 
 document.getElementById("otherMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
+  const home = document.getElementById("otherHomeSelect").value;
+  const away = document.getElementById("otherAwaySelect").value;
+
+  if (!home || !away) {
+    alert("Choose both teams.");
+    return;
+  }
+
+  if (home === away) {
+    alert("Choose two different teams.");
+    return;
+  }
+
   await createOtherMatch(
-    document.getElementById("otherHomeInput").value,
-    document.getElementById("otherAwayInput").value,
+    home,
+    away,
     document.getElementById("otherDateInput").value
   );
   event.target.reset();
@@ -1180,6 +1375,34 @@ document.getElementById("playerForm").addEventListener("submit", async event => 
   configState.players.push({ id: cryptoId(), name, points });
   await saveConfig({ players: configState.players });
   event.target.reset();
+});
+
+document.getElementById("addOtherTeamBtn")?.addEventListener("click", async () => {
+  const name = normaliseName(document.getElementById("newOtherTeamInput").value);
+  const code = normaliseName(document.getElementById("newOtherTeamCodeInput").value || name.slice(0,3)).toUpperCase();
+
+  if (!name) return;
+
+  configState.otherTeams = configState.otherTeams || [];
+  if (configState.otherTeams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+    alert("Team already exists.");
+    return;
+  }
+
+  configState.otherTeams.push({ id: cryptoId(), name, code });
+  await saveConfig({ otherTeams: configState.otherTeams });
+
+  document.getElementById("newOtherTeamInput").value = "";
+  document.getElementById("newOtherTeamCodeInput").value = "";
+});
+
+document.getElementById("toggleOtherPlayersBtn")?.addEventListener("click", () => {
+  const content = document.getElementById("otherPlayersManager");
+  const btn = document.getElementById("toggleOtherPlayersBtn");
+  if (!content || !btn) return;
+
+  const collapsed = content.classList.toggle("collapsed");
+  btn.textContent = collapsed ? "Open player tiers" : "Hide player tiers";
 });
 
 document.getElementById("otherPlayerForm")?.addEventListener("submit", async event => {
@@ -1324,6 +1547,9 @@ document.addEventListener("click", async event => {
 
 
 document.getElementById("exportBtn").addEventListener("click", exportBackup);
+document.getElementById("importBackupFile")?.addEventListener("change", event => {
+  importBackupFile(event.target.files?.[0]);
+});
 
 document.getElementById("closeSummaryBtn")?.addEventListener("click", closeRoundSummary);
 document.getElementById("roundSummaryModal")?.addEventListener("click", event => {
