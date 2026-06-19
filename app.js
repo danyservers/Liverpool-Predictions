@@ -352,10 +352,34 @@ async function savePrediction(matchId, data) {
   setCloudStatus("Prediction saved to cloud", "online");
 }
 
+function todayDateString() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function setDefaultMatchDates() {
+  const today = todayDateString();
+  ["lfcDateInput", "otherDateInput"].forEach(id => {
+    const input = document.getElementById(id);
+    if (input && !input.value) input.value = today;
+  });
+}
+
+function displayTeamsForMatch(match) {
+  const isLiverpoolAway = match.gameType === "lfc" && match.isAway === true;
+  return {
+    home: isLiverpoolAway ? match.away : match.home,
+    away: isLiverpoolAway ? match.home : match.away
+  };
+}
+
 async function createLfcMatch(opponent, date) {
   const team = configState.opponents.find(t => t.name === opponent);
   await addDoc(collection(db, "matches"), {
     gameType: "lfc",
+    isAway: isAway === true,
     seasonId: configState.activeSeasonId,
     home: "Liverpool",
     away: opponent,
@@ -1414,7 +1438,7 @@ function showRoundSummary(match, predictionMap = null) {
   content.innerHTML = `
     <div class="actual-summary">
       <div>
-        <h3>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</h3>
+        <h3>${escapeHtml(displayTeamsForMatch(match).home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(displayTeamsForMatch(match).away)}</h3>
         <p>Actual scorers: <strong>${escapeHtml(parseScorers(match.actualScorers).join(", ") || "-")}</strong></p>
       </div>
       <div class="actual-badge">${escapeHtml(match.gameType === "lfc" ? "Liverpool" : "Other")}</div>
@@ -1492,7 +1516,7 @@ function renderHistory() {
     item.className = "history-item";
     item.innerHTML = `
       <div class="history-main">
-        <strong>${escapeHtml(match.home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(match.away)}</strong>
+        <strong>${escapeHtml(displayTeamsForMatch(match).home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(displayTeamsForMatch(match).away)}</strong>
         <div class="muted">${escapeHtml(match.seasonId)} • ${match.gameType === "lfc" ? "Liverpool" : "Other"} • Round winner: ${escapeHtml(match.summary?.roundWinner || "-")}</div>
         ${summaryCardHtml(match)}
       </div>
@@ -1539,6 +1563,7 @@ function render() {
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
   safeRenderStep("renderScoreboard", renderScoreboard);
+  safeRenderStep("setDefaultMatchDates", setDefaultMatchDates);
   safeRenderStep("renderOpponentSelect", renderOpponentSelect);
   safeRenderStep("renderMatchList lfc", () => renderMatchList("lfcMatches", "lfc"));
   safeRenderStep("renderMatchList other", () => renderMatchList("otherMatches", "other"));
@@ -1674,7 +1699,8 @@ document.getElementById("lfcMatchForm").addEventListener("submit", async event =
   event.preventDefault();
 
   const opponent = getSmartPickerValue("lfcOpponentPicker");
-  const date = document.getElementById("lfcDateInput").value;
+  const date = document.getElementById("lfcDateInput").value || todayDateString();
+  const isAway = document.getElementById("lfcAwayInput")?.checked === true;
 
   if (!opponent) {
     alert("Please choose an opponent from the saved opponent list. Use Manage opponents if you need to add a new team.");
@@ -1682,8 +1708,10 @@ document.getElementById("lfcMatchForm").addEventListener("submit", async event =
   }
 
   try {
-    await createLfcMatch(opponent, date);
+    await createLfcMatch(opponent, date, isAway);
     event.target.reset();
+    document.getElementById("lfcAwayInput").checked = false;
+    setDefaultMatchDates();
     clearSmartPicker("lfcOpponentPicker");
     setCloudStatus("Match event created", "online");
   } catch (error) {
@@ -1697,7 +1725,7 @@ document.getElementById("otherMatchForm").addEventListener("submit", async event
 
   const home = getSmartPickerValue("otherHomePicker");
   const away = getSmartPickerValue("otherAwayPicker");
-  const date = document.getElementById("otherDateInput").value;
+  const date = document.getElementById("otherDateInput").value || todayDateString();
 
   if (!home || !away) {
     alert("Please choose both teams from the saved team list. Use Manage teams if you need to add a new team.");
@@ -1712,6 +1740,7 @@ document.getElementById("otherMatchForm").addEventListener("submit", async event
   try {
     await createOtherMatch(home, away, date);
     event.target.reset();
+    setDefaultMatchDates();
     clearSmartPicker("otherHomePicker");
     clearSmartPicker("otherAwayPicker");
     setCloudStatus("Other match event created", "online");

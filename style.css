@@ -823,3 +823,30 @@ input[list]::-webkit-calendar-picker-indicator {
 .actual-scorer-dropdowns.searchable-scorers input[list] {
   min-height: 46px;
 }
+
+
+/* v32 date default + away match toggle */
+.away-toggle {
+  min-height: 46px;
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,255,255,.08);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.away-toggle input {
+  width: auto;
+  min-height: 0;
+  accent-color: var(--red);
+}
+
+.away-toggle span {
+  color: var(--gold);
+}

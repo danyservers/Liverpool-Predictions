@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=31" />
+  <link rel="stylesheet" href="style.css?v=32" />
 </head>
 <body>
   <div class="app-shell">
@@ -84,6 +84,10 @@
               <label>Opponent</label>
               <div class="smart-picker" id="lfcOpponentPicker" data-placeholder="Search or choose opponent"></div>
             </div>
+            <label class="away-toggle">
+              <input id="lfcAwayInput" type="checkbox" />
+              <span>(A)</span>
+            </label>
             <div>
               <label>Match date</label>
               <input id="lfcDateInput" type="date" />
@@ -331,7 +335,7 @@
   <datalist id="lfcPlayerOptions"></datalist>
   <datalist id="otherPlayerOptions"></datalist>
 
-  <script type="module" src="firebase-config.js?v=31"></script>
-  <script type="module" src="app.js?v=31"></script>
+  <script type="module" src="firebase-config.js?v=32"></script>
+  <script type="module" src="app.js?v=32"></script>
 </body>
 </html>
