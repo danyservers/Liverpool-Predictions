@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=24" />
+  <link rel="stylesheet" href="style.css?v=25" />
 </head>
 <body>
   <div class="app-shell">
@@ -82,8 +82,9 @@
           <form id="lfcMatchForm" class="match-form">
             <div>
               <label>Opponent</label>
-              <div class="combo-box">
-                <input id="lfcOpponentSelect" list="lfcOpponentOptions" placeholder="Search or choose opponent" required autocomplete="off" />
+              <div class="combo-box real-combo">
+                <input id="lfcOpponentSelect" placeholder="Search or choose opponent" required autocomplete="off" />
+                <button type="button" class="combo-toggle" data-combo-target="lfcOpponentSelect" aria-label="Show opponents">⌄</button>
                 <div class="combo-menu" id="lfcOpponentMenu"></div>
               </div>
             </div>
@@ -134,12 +135,14 @@
             </div>
           </div>
           <form id="otherMatchForm" class="other-form">
-            <div class="combo-box">
-              <input id="otherHomeSelect" list="otherTeamOptions" placeholder="Search or choose home team" required autocomplete="off" />
+            <div class="combo-box real-combo">
+              <input id="otherHomeSelect" placeholder="Search or choose home team" required autocomplete="off" />
+              <button type="button" class="combo-toggle" data-combo-target="otherHomeSelect" aria-label="Show home teams">⌄</button>
               <div class="combo-menu" id="otherHomeMenu"></div>
             </div>
-            <div class="combo-box">
-              <input id="otherAwaySelect" list="otherTeamOptions" placeholder="Search or choose away team" required autocomplete="off" />
+            <div class="combo-box real-combo">
+              <input id="otherAwaySelect" placeholder="Search or choose away team" required autocomplete="off" />
+              <button type="button" class="combo-toggle" data-combo-target="otherAwaySelect" aria-label="Show away teams">⌄</button>
               <div class="combo-menu" id="otherAwayMenu"></div>
             </div>
             <input id="otherDateInput" type="date" />
@@ -332,7 +335,7 @@
   <datalist id="lfcPlayerOptions"></datalist>
   <datalist id="otherPlayerOptions"></datalist>
 
-  <script type="module" src="firebase-config.js?v=24"></script>
-  <script type="module" src="app.js?v=24"></script>
+  <script type="module" src="firebase-config.js?v=25"></script>
+  <script type="module" src="app.js?v=25"></script>
 </body>
 </html>

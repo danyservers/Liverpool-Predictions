@@ -627,3 +627,55 @@ input[list]::-webkit-calendar-picker-indicator {
   background: rgba(212,175,55,.08);
   border-color: rgba(212,175,55,.25);
 }
+
+
+/* v25 real searchable dropdown pickers */
+.real-combo {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 0;
+}
+
+.real-combo input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.combo-toggle {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 0;
+  min-height: 46px;
+  padding: 0;
+  font-size: 1.2rem;
+  background: rgba(255,255,255,.1);
+}
+
+.combo-toggle:hover {
+  background: rgba(255,255,255,.16);
+}
+
+.real-combo .combo-menu {
+  grid-column: 1 / -1;
+  top: calc(100% + 6px);
+}
+
+.combo-menu.open {
+  display: grid !important;
+  gap: 4px;
+}
+
+.combo-option {
+  cursor: pointer;
+  color: var(--text);
+}
+
+.combo-option span {
+  color: var(--text);
+  font-weight: 850;
+}
+
+.combo-option small {
+  color: var(--muted);
+}

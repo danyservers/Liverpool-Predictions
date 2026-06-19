@@ -534,6 +534,7 @@ function renderOtherTeamSelects() {
   if (!homeInput || !awayInput || !datalist) return;
 
   const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
+
   datalist.innerHTML = teams
     .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
     .join("");
@@ -620,6 +621,8 @@ function renderScoreboard() {
   `;
 }
 
+const teamCombos = {};
+
 function resolveSavedTeamName(value, teams) {
   const query = normaliseName(value).toLowerCase();
   if (!query) return "";
@@ -645,50 +648,62 @@ function resolveSavedTeamName(value, teams) {
   return "";
 }
 
+function renderTeamComboMenu(inputId, forceOpen = false) {
+  const combo = teamCombos[inputId];
+  if (!combo) return;
+
+  const { input, menu } = combo;
+  const teams = [...(combo.teams || [])].sort((a, b) => a.name.localeCompare(b.name));
+  const query = input.value.trim().toLowerCase();
+
+  const filtered = query
+    ? teams.filter(team =>
+        team.name.toLowerCase().includes(query) ||
+        (team.code || "").toLowerCase().includes(query)
+      )
+    : teams;
+
+  const visible = filtered.slice(0, 24);
+
+  menu.innerHTML = visible.length
+    ? visible.map(team => `
+        <button type="button" class="combo-option" data-team="${escapeHtml(team.name)}">
+          <span>${escapeHtml(team.name)}</span>
+          <small>${escapeHtml(team.code || "")}</small>
+        </button>
+      `).join("")
+    : `<div class="combo-empty">No saved team found</div>`;
+
+  if (forceOpen || document.activeElement === input || query) {
+    menu.classList.add("open");
+  }
+}
+
 function setupTeamCombo(inputId, menuId, teams) {
   const input = document.getElementById(inputId);
   const menu = document.getElementById(menuId);
   if (!input || !menu) return;
 
-  input._comboTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+  teamCombos[inputId] = { input, menu, teams: [...teams] };
 
-  const renderMenu = () => {
-    const sortedTeams = input._comboTeams || [];
-    const query = input.value.trim().toLowerCase();
-    const filtered = query
-      ? sortedTeams.filter(team =>
-          team.name.toLowerCase().includes(query) ||
-          (team.code || "").toLowerCase().includes(query)
-        )
-      : sortedTeams;
+  if (input.dataset.comboReady === "true") {
+    renderTeamComboMenu(inputId, false);
+    return;
+  }
 
-    const visible = filtered.slice(0, 20);
-
-    menu.innerHTML = visible.length
-      ? visible.map(team => `
-          <button type="button" class="combo-option" data-team="${escapeHtml(team.name)}">
-            <span>${escapeHtml(team.name)}</span>
-            <small>${escapeHtml(team.code || "")}</small>
-          </button>
-        `).join("")
-      : `<div class="combo-empty">No saved team found</div>`;
-
-    menu.classList.add("open");
-  };
-
-  if (input.dataset.comboReady === "true") return;
   input.dataset.comboReady = "true";
 
-  input.addEventListener("focus", renderMenu);
-  input.addEventListener("click", renderMenu);
-  input.addEventListener("input", renderMenu);
+  input.addEventListener("focus", () => renderTeamComboMenu(inputId, true));
+  input.addEventListener("click", () => renderTeamComboMenu(inputId, true));
+  input.addEventListener("input", () => renderTeamComboMenu(inputId, true));
   input.addEventListener("keydown", event => {
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      menu.querySelector(".combo-option")?.focus();
-    }
     if (event.key === "Escape") {
       menu.classList.remove("open");
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      renderTeamComboMenu(inputId, true);
+      menu.querySelector(".combo-option")?.focus();
     }
   });
   input.addEventListener("blur", () => {
@@ -698,9 +713,11 @@ function setupTeamCombo(inputId, menuId, teams) {
   menu.addEventListener("mousedown", event => {
     const option = event.target.closest(".combo-option");
     if (!option) return;
+
     event.preventDefault();
     input.value = option.dataset.team;
     menu.classList.remove("open");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
   });
 
@@ -713,6 +730,7 @@ function setupTeamCombo(inputId, menuId, teams) {
       input.value = option.dataset.team;
       menu.classList.remove("open");
       input.focus();
+      input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
     }
 
@@ -726,7 +744,21 @@ function setupTeamCombo(inputId, menuId, teams) {
       option.previousElementSibling?.focus() || input.focus();
     }
   });
+
+  renderTeamComboMenu(inputId, false);
 }
+
+document.addEventListener("click", event => {
+  const toggle = event.target.closest(".combo-toggle");
+  if (!toggle) return;
+
+  const inputId = toggle.dataset.comboTarget;
+  const combo = teamCombos[inputId];
+  if (!combo) return;
+
+  combo.input.focus();
+  renderTeamComboMenu(inputId, true);
+});
 
 function renderOpponentSelect() {
   const input = document.getElementById("lfcOpponentSelect");
@@ -734,6 +766,7 @@ function renderOpponentSelect() {
   if (!input || !datalist) return;
 
   const teams = [...(configState.opponents || [])].sort((a,b) => a.name.localeCompare(b.name));
+
   datalist.innerHTML = teams
     .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
     .join("");
