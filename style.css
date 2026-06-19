@@ -454,3 +454,73 @@ input:focus,textarea:focus,select:focus{border-color:rgba(212,175,55,.8)}
 input[list]::-webkit-calendar-picker-indicator {
   opacity: .75;
 }
+
+
+/* v22 header and team manager polish */
+.hidden-control {
+  display: none !important;
+}
+
+.account-actions {
+  min-width: 360px;
+  align-items: flex-end;
+}
+
+.account-row,
+.backup-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.backup-row {
+  margin-top: 10px;
+}
+
+.import-label {
+  min-height: 46px;
+}
+
+.manager-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 0 0;
+}
+
+.manager-search {
+  margin: 12px 0;
+}
+
+#otherTeamsManager .manager-list {
+  max-height: 320px;
+}
+
+#lfcOpponentSelect,
+#otherHomeSelect,
+#otherAwaySelect {
+  min-height: 46px;
+}
+
+@media(max-width:900px){
+  .hero {
+    align-items: stretch;
+  }
+  .account-actions {
+    min-width: 0;
+    width: 100%;
+    align-items: stretch;
+  }
+  .account-row,
+  .backup-row {
+    justify-content: stretch;
+  }
+  .account-row > *,
+  .backup-row > * {
+    flex: 1;
+  }
+}

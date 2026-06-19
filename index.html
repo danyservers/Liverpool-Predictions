@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Dany vs Isa Prediction League</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css?v=21" />
+  <link rel="stylesheet" href="style.css?v=22" />
 </head>
 <body>
   <div class="app-shell">
@@ -22,14 +22,18 @@
           <p class="subtitle">Liverpool plays, do they win? And what about you?</p>
         </div>
       </div>
-      <div class="hero-actions account-actions">
-        <div id="accountBadge" class="account-badge">Signed out</div>
-        <button type="button" class="ghost" id="exportBtn">Export backup</button>
-        <label class="ghost import-label">
-          Import backup
-          <input type="file" id="importBackupFile" accept="application/json" />
-        </label>
-        <button class="ghost" id="signOutBtn" type="button">Sign out</button>
+      <div class="hero-actions account-actions" id="accountActions">
+        <div class="account-row">
+          <div id="accountBadge" class="account-badge hidden-control">Signed out</div>
+          <button class="ghost hidden-control" id="signOutBtn" type="button">Sign out</button>
+        </div>
+        <div class="backup-row hidden-control" id="backupActions">
+          <button type="button" class="ghost" id="exportBtn">Export backup</button>
+          <label class="ghost import-label">
+            Import backup
+            <input type="file" id="importBackupFile" accept="application/json" />
+          </label>
+        </div>
       </div>
     </header>
 
@@ -74,7 +78,7 @@
           <form id="lfcMatchForm" class="match-form">
             <div>
               <label>Opponent</label>
-              <select id="lfcOpponentSelect" required></select>
+              <input id="lfcOpponentSelect" list="lfcOpponentOptions" placeholder="Search opponent" required />
             </div>
             <div>
               <label>Match date</label>
@@ -123,8 +127,8 @@
             </div>
           </div>
           <form id="otherMatchForm" class="other-form">
-            <select id="otherHomeSelect" required></select>
-            <select id="otherAwaySelect" required></select>
+            <input id="otherHomeSelect" list="otherTeamOptions" placeholder="Search home team" required />
+            <input id="otherAwaySelect" list="otherTeamOptions" placeholder="Search away team" required />
             <input id="otherDateInput" type="date" />
             <button type="submit">Create match</button>
           </form>
@@ -133,7 +137,14 @@
             <input id="newOtherTeamCodeInput" placeholder="Badge, e.g. DEN" maxlength="5" />
             <button type="button" class="ghost" id="addOtherTeamBtn">Add team</button>
           </div>
-          <div id="otherTeamList" class="manager-list compact-list"></div>
+          <div class="manager-toggle-row">
+            <span id="otherTeamCount" class="muted">Teams saved</span>
+            <button type="button" class="ghost" id="toggleOtherTeamsBtn">Open team manager</button>
+          </div>
+          <div id="otherTeamsManager" class="collapsible-content collapsed">
+            <input id="otherTeamSearchInput" class="manager-search" placeholder="Search saved teams" />
+            <div id="otherTeamList" class="manager-list compact-list"></div>
+          </div>
         </section>
 
         <section class="panel">
@@ -303,10 +314,12 @@
     </div>
   </div>
 
+  <datalist id="lfcOpponentOptions"></datalist>
+  <datalist id="otherTeamOptions"></datalist>
   <datalist id="lfcPlayerOptions"></datalist>
   <datalist id="otherPlayerOptions"></datalist>
 
-  <script type="module" src="firebase-config.js?v=21"></script>
-  <script type="module" src="app.js?v=21"></script>
+  <script type="module" src="firebase-config.js?v=22"></script>
+  <script type="module" src="app.js?v=22"></script>
 </body>
 </html>

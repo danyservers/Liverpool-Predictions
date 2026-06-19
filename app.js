@@ -146,6 +146,12 @@ function setAccountBadge(text) {
   if (badge) badge.textContent = text;
 }
 
+function setHeaderLoggedIn(isLoggedIn) {
+  document.querySelectorAll("#accountBadge, #signOutBtn, #backupActions").forEach(el => {
+    if (el) el.classList.toggle("hidden-control", !isLoggedIn);
+  });
+}
+
 function normaliseName(name) {
   return String(name || "").trim().replace(/\s+/g, " ");
 }
@@ -522,27 +528,33 @@ function totals(gameType, seasonId = null) {
 }
 
 function renderOtherTeamSelects() {
-  const homeSelect = document.getElementById("otherHomeSelect");
-  const awaySelect = document.getElementById("otherAwaySelect");
-  if (!homeSelect || !awaySelect) return;
+  const homeInput = document.getElementById("otherHomeSelect");
+  const awayInput = document.getElementById("otherAwaySelect");
+  const datalist = document.getElementById("otherTeamOptions");
+  if (!homeInput || !awayInput || !datalist) return;
 
-  const oldHome = homeSelect.value;
-  const oldAway = awaySelect.value;
-  const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
-  const options = `<option value="">Choose team</option>` + teams.map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.name)}</option>`).join("");
-
-  homeSelect.innerHTML = options;
-  awaySelect.innerHTML = options;
-  homeSelect.value = oldHome;
-  awaySelect.value = oldAway;
+  datalist.innerHTML = [...(configState.otherTeams || [])]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
+    .join("");
 }
 
 function renderOtherTeamList() {
   const list = document.getElementById("otherTeamList");
+  const count = document.getElementById("otherTeamCount");
+  const searchInput = document.getElementById("otherTeamSearchInput");
   if (!list) return;
 
+  const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
+  if (count) count.textContent = `${teams.length} teams saved`;
+
+  const query = (searchInput?.value || "").trim().toLowerCase();
+  const filteredTeams = query
+    ? teams.filter(team => team.name.toLowerCase().includes(query) || (team.code || "").toLowerCase().includes(query))
+    : teams;
+
   list.innerHTML = "";
-  [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name)).forEach(team => {
+  filteredTeams.forEach(team => {
     const item = document.createElement("div");
     item.className = "manager-item compact-item";
     item.innerHTML = `
@@ -606,97 +618,14 @@ function renderScoreboard() {
 }
 
 function renderOpponentSelect() {
-  const select = document.getElementById("lfcOpponentSelect");
-  const selected = select.value;
-  select.innerHTML = `<option value="">Choose opponent</option>`;
-  [...configState.opponents].sort((a,b) => a.name.localeCompare(b.name)).forEach(team => {
-    const option = document.createElement("option");
-    option.value = team.name;
-    option.textContent = team.name;
-    select.appendChild(option);
-  });
-  select.value = selected;
-}
+  const input = document.getElementById("lfcOpponentSelect");
+  const datalist = document.getElementById("lfcOpponentOptions");
+  if (!input || !datalist) return;
 
-function updatePlayerDatalists() {
-  const lfcList = document.getElementById("lfcPlayerOptions");
-  const otherList = document.getElementById("otherPlayerOptions");
-
-  if (lfcList) {
-    lfcList.innerHTML = [...configState.players]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
-      .join("");
-  }
-
-  if (otherList) {
-    otherList.innerHTML = [...(configState.otherPlayers || [])]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
-      .join("");
-  }
-}
-
-function setupScorerPickers(node, match, existingScorers = []) {
-  updatePlayerDatalists();
-
-  const scorerFields = [
-    node.querySelector('[data-own="scorer0"]'),
-    node.querySelector('[data-own="scorer1"]'),
-    node.querySelector('[data-own="scorer2"]')
-  ];
-
-  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
-
-  scorerFields.forEach((field, index) => {
-    if (!field) return;
-
-    const input = document.createElement("input");
-    input.dataset.own = field.dataset.own;
-    input.setAttribute("list", listId);
-    input.placeholder = `Search scorer ${index + 1}`;
-    input.autocomplete = "off";
-    input.value = existingScorers[index] || "";
-
-    field.replaceWith(input);
-  });
-}
-
-function setupActualScorerPicker(node, match, existingActualScorers = []) {
-  updatePlayerDatalists();
-
-  const actualField = node.querySelector('[data-actual="actualScorers"]');
-  if (!actualField) return;
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "actual-scorer-dropdowns searchable-scorers";
-  wrapper.dataset.actual = "actualScorersGroup";
-
-  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
-
-  for (let i = 0; i < 6; i++) {
-    const input = document.createElement("input");
-    input.dataset.actualScorerIndex = String(i);
-    input.setAttribute("list", listId);
-    input.placeholder = `Search actual scorer ${i + 1}`;
-    input.autocomplete = "off";
-    input.value = existingActualScorers[i] || "";
-    wrapper.appendChild(input);
-  }
-
-  actualField.replaceWith(wrapper);
-}
-
-function getActualScorersFromNode(node) {
-  const group = node.querySelector('[data-actual="actualScorersGroup"]');
-  if (group) {
-    return Array.from(group.querySelectorAll("input, select"))
-      .map(field => field.value)
-      .filter(Boolean);
-  }
-
-  const textArea = node.querySelector('[data-actual="actualScorers"]');
-  return textArea ? textArea.value : "";
+  datalist.innerHTML = [...configState.opponents]
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
+    .join("");
 }
 
 function fixtureHtml(match) {
@@ -1404,7 +1333,15 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 document.getElementById("lfcMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  await createLfcMatch(document.getElementById("lfcOpponentSelect").value, document.getElementById("lfcDateInput").value);
+  const opponent = document.getElementById("lfcOpponentSelect").value;
+  const opponentNames = configState.opponents.map(team => team.name);
+
+  if (!opponentNames.includes(opponent)) {
+    alert("Please choose an opponent from the saved opponent list, or add it first.");
+    return;
+  }
+
+  await createLfcMatch(opponent, document.getElementById("lfcDateInput").value);
   event.target.reset();
 });
 
@@ -1415,6 +1352,12 @@ document.getElementById("otherMatchForm").addEventListener("submit", async event
 
   if (!home || !away) {
     alert("Choose both teams.");
+    return;
+  }
+
+  const teamNames = (configState.otherTeams || []).map(team => team.name);
+  if (!teamNames.includes(home) || !teamNames.includes(away)) {
+    alert("Please choose teams from the saved team list, or add the team first.");
     return;
   }
 
@@ -1454,6 +1397,17 @@ document.getElementById("playerForm").addEventListener("submit", async event => 
   await saveConfig({ players: configState.players });
   event.target.reset();
 });
+
+document.getElementById("toggleOtherTeamsBtn")?.addEventListener("click", () => {
+  const content = document.getElementById("otherTeamsManager");
+  const btn = document.getElementById("toggleOtherTeamsBtn");
+  if (!content || !btn) return;
+
+  const collapsed = content.classList.toggle("collapsed");
+  btn.textContent = collapsed ? "Open team manager" : "Hide team manager";
+});
+
+document.getElementById("otherTeamSearchInput")?.addEventListener("input", renderOtherTeamList);
 
 document.getElementById("addOtherTeamBtn")?.addEventListener("click", async () => {
   const name = normaliseName(document.getElementById("newOtherTeamInput").value);
@@ -1659,6 +1613,7 @@ document.getElementById("signOutBtn").addEventListener("click", async () => {
 });
 
 async function boot() {
+  setHeaderLoggedIn(false);
   if (!hasFirebaseConfig()) {
     setCloudStatus("Firebase config needed", "offline");
     return;
@@ -1678,6 +1633,7 @@ async function boot() {
       if (unsubscribeMatches) unsubscribeMatches();
       predictionUnsubs.forEach(unsub => unsub());
       showApp(false);
+      setHeaderLoggedIn(false);
       setAccountBadge("Signed out");
       setCloudStatus("Signed out", "offline");
       return;
@@ -1687,6 +1643,7 @@ async function boot() {
 
     if (!currentProfile) {
       showApp(false);
+      setHeaderLoggedIn(false);
       setAccountBadge("Not allowed");
       setCloudStatus("Signed in, but not allowed", "offline");
       alert("This Firebase user UID is not listed in USER_PROFILES_BY_UID inside firebase-config.js.");
@@ -1694,6 +1651,7 @@ async function boot() {
     }
 
     showApp(true);
+    setHeaderLoggedIn(true);
     setAccountBadge(`Logged in as ${currentProfile.name}`);
     setCloudStatus("Live cloud sync", "online");
     await initialiseCloud();
