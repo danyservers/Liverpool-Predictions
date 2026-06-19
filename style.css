@@ -799,3 +799,9 @@ input[list]::-webkit-calendar-picker-indicator {
 .smart-picker-menu {
   z-index: 999;
 }
+
+/* v29 create event fix */
+.smart-picker.has-selection .smart-picker-input {
+  border-color: rgba(89,255,150,.55);
+  box-shadow: 0 0 0 1px rgba(89,255,150,.22);
+}

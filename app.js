@@ -374,26 +374,32 @@ async function createLfcMatch(opponent, date) {
 }
 
 async function createOtherMatch(home, away, date) {
-  const homeTeam = (configState.otherTeams || []).find(t => t.name === home);
-  const awayTeam = (configState.otherTeams || []).find(t => t.name === away);
+  const cleanHome = normaliseName(home);
+  const cleanAway = normaliseName(away);
+  const homeTeam = (configState.otherTeams || []).find(t => t.name === cleanHome);
+  const awayTeam = (configState.otherTeams || []).find(t => t.name === cleanAway);
+
+  if (!cleanHome || !cleanAway) {
+    throw new Error("Both teams are required.");
+  }
 
   await addDoc(collection(db, "matches"), {
     gameType: "other",
     seasonId: configState.activeSeasonId,
-    home: normaliseName(home),
-    away: normaliseName(away),
-    homeCode: homeTeam?.code || normaliseName(home).slice(0, 3).toUpperCase(),
-    opponent: normaliseName(away),
-    opponentCode: awayTeam?.code || normaliseName(away).slice(0, 3).toUpperCase(),
-    date,
-    actualHome: "",
-    actualAway: "",
-    actualScorers: [],
+    home: cleanHome,
+    away: cleanAway,
+    homeCode: homeTeam?.code || cleanHome.slice(0, 3).toUpperCase(),
+    opponent: cleanAway,
+    opponentCode: awayTeam?.code || cleanAway.slice(0, 3).toUpperCase(),
+    date: date || "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     revealed: false,
     calculated: false,
-    discordPosted: false,
-    submitted: { dany: false, isa: false },
-    createdAt: serverTimestamp()
+    submitted: {},
+    actualHome: "",
+    actualAway: "",
+    actualScorers: []
   });
 }
 
@@ -645,7 +651,23 @@ function resolveSavedTeamName(value, teams) {
 function getSmartPickerValue(pickerId) {
   const state = smartPickers[pickerId];
   if (!state) return "";
-  return state.selected || resolveSavedTeamName(state.input.value, state.items);
+
+  const selected = state.selected || "";
+  const typed = state.input?.value || "";
+
+  if (selected && state.items.some(item => item.name === selected)) {
+    return selected;
+  }
+
+  const resolved = resolveSavedTeamName(typed, state.items);
+  if (resolved) {
+    state.selected = resolved;
+    state.input.value = resolved;
+    state.root.classList.add("has-selection");
+    return resolved;
+  }
+
+  return "";
 }
 
 function clearSmartPicker(pickerId) {
@@ -1572,25 +1594,35 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 document.getElementById("lfcMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
+
   const opponent = getSmartPickerValue("lfcOpponentPicker");
+  const date = document.getElementById("lfcDateInput").value;
 
   if (!opponent) {
-    alert("Please choose an opponent from the saved opponent list, or add it first.");
+    alert("Please choose an opponent from the saved opponent list. Use Manage opponents if you need to add a new team.");
     return;
   }
 
-  await createLfcMatch(opponent, document.getElementById("lfcDateInput").value);
-  event.target.reset();
-  clearSmartPicker("lfcOpponentPicker");
+  try {
+    await createLfcMatch(opponent, date);
+    event.target.reset();
+    clearSmartPicker("lfcOpponentPicker");
+    setCloudStatus("Match event created", "online");
+  } catch (error) {
+    console.error("Create Liverpool match failed:", error);
+    alert(`Could not create match: ${error.message || "Unknown error"}`);
+  }
 });
 
 document.getElementById("otherMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
+
   const home = getSmartPickerValue("otherHomePicker");
   const away = getSmartPickerValue("otherAwayPicker");
+  const date = document.getElementById("otherDateInput").value;
 
   if (!home || !away) {
-    alert("Please choose both teams from the saved team list, or add the team first.");
+    alert("Please choose both teams from the saved team list. Use Manage teams if you need to add a new team.");
     return;
   }
 
@@ -1599,14 +1631,16 @@ document.getElementById("otherMatchForm").addEventListener("submit", async event
     return;
   }
 
-  await createOtherMatch(
-    home,
-    away,
-    document.getElementById("otherDateInput").value
-  );
-  event.target.reset();
-  clearSmartPicker("otherHomePicker");
-  clearSmartPicker("otherAwayPicker");
+  try {
+    await createOtherMatch(home, away, date);
+    event.target.reset();
+    clearSmartPicker("otherHomePicker");
+    clearSmartPicker("otherAwayPicker");
+    setCloudStatus("Other match event created", "online");
+  } catch (error) {
+    console.error("Create other match failed:", error);
+    alert(`Could not create other match: ${error.message || "Unknown error"}`);
+  }
 });
 
 document.getElementById("toggleOpponentManagerBtn")?.addEventListener("click", () => {
