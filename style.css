@@ -121,7 +121,7 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 /* Outer container — one consistent panel style, no double borders */
 .panel,
 .auth-panel{
-  background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius-lg);
+  background:var(--bg-1);border-radius:var(--radius-lg);
   box-shadow:var(--shadow-panel);padding:24px 26px;margin-bottom:20px;
 }
 
@@ -139,7 +139,7 @@ h2{font-size:1.3rem;font-weight:800}
 .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .mini-score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .score-card,.stat-card{
-  background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius-md);
+  background:var(--bg-1);border-radius:var(--radius-md);
   padding:18px 20px;box-shadow:var(--shadow-card);
 }
 .score-card span,.stat-label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:4px;font-weight:600}
@@ -150,7 +150,7 @@ h2{font-size:1.3rem;font-weight:800}
 /* ---------- Tabs ---------- */
 .tabs{
   display:flex;gap:6px;padding:6px;margin-bottom:20px;overflow:auto;
-  background:var(--bg-1);border:1px solid var(--line);border-radius:999px;
+  background:var(--bg-1);border-radius:999px;box-shadow:var(--shadow-card);
 }
 .tab{
   background:transparent;border:0;white-space:nowrap;color:var(--text-dim);
@@ -179,20 +179,20 @@ h2{font-size:1.3rem;font-weight:800}
 .manager-search{margin-top:2px}
 
 .notice,.info-note,.tip{
-  color:var(--text-dim);padding:13px 16px;border:1px solid var(--line);border-radius:var(--radius-sm);
+  color:var(--text-dim);padding:13px 16px;border-radius:var(--radius-sm);
   background:var(--bg-2);margin-bottom:16px;font-size:.9rem;
 }
 .small-note{font-size:.85rem;margin-top:10px;color:var(--text-dim)}
 
 /* ---------- Lists: matches, history, manager items ---------- */
-.match-list,.history-list,.manager-list{display:grid;gap:14px}
+.match-list,.history-list,.manager-list{display:grid;gap:10px}
 .compact-list{gap:8px}
 
 .manager-item,.season-item,
 .history-item,.history-card,
 .compact-item{
   display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;
-  background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:var(--bg-2);border-radius:var(--radius-sm);
 }
 .manager-item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .manager-item-actions select{min-width:110px}
@@ -200,32 +200,32 @@ h2{font-size:1.3rem;font-weight:800}
 .history-main{flex:1}
 
 .empty,.empty-state{
-  color:var(--text-faint);padding:18px;border:1px dashed var(--line-strong);border-radius:var(--radius-md);
-  text-align:center;font-size:.92rem;
+  color:var(--text-faint);padding:18px;border-radius:var(--radius-md);
+  background:var(--bg-1);text-align:center;font-size:.92rem;
 }
 
 /* ---------- Match card (the main "boxy" offender — flattened) ---------- */
 .match-card{
-  background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius-lg);
+  background:var(--bg-1);border-radius:var(--radius-lg);
   overflow:hidden;box-shadow:var(--shadow-panel);
 }
 .match-card-header,.match-header{
   display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;
-  background:rgba(255,255,255,.02);
+  background:rgba(255,255,255,.03);
 }
 .fixture{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .team,.team-picker{display:flex;align-items:center;gap:10px;font-weight:700}
 .badge{
   width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-  background:var(--bg-3);border:1px solid var(--line-strong);font-size:.78rem;font-weight:800;flex:0 0 auto;
+  background:var(--bg-3);font-size:.78rem;font-weight:800;flex:0 0 auto;
 }
 .opponent-badge,.actual-badge{background:linear-gradient(145deg,#34343f,#1f1f28)}
 .versus{color:var(--gold);font-weight:800;font-size:.85rem}
 .match-meta{color:var(--text-dim);font-weight:600;font-size:.9rem}
 
-/* Event grid — replaced hard vertical dividers with spacing + subtle bg shift */
-.event-grid{display:grid;grid-template-columns:1.15fr 1fr 1.1fr;gap:1px;background:var(--line)}
-.event-panel{padding:20px 22px;background:var(--bg-1)}
+/* Event grid — spacing instead of hard dividers */
+.event-grid{display:grid;grid-template-columns:1.15fr 1fr 1.1fr;gap:18px;padding:0 4px}
+.event-panel{padding:20px 18px}
 .event-panel h3{font-size:1rem;font-weight:700;margin-bottom:12px}
 
 .score-row{display:flex;align-items:center;gap:10px;margin:12px 0}
@@ -359,7 +359,7 @@ h2{font-size:1.3rem;font-weight:800}
 .lfc-open-panel .match-card::before,
 .squad-tab-panel .panel::before{
   content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
-  background:linear-gradient(160deg, rgba(10,10,14,.93), rgba(10,10,14,.86) 55%, rgba(10,10,14,.93));
+  background:linear-gradient(160deg, rgba(10,10,14,.78), rgba(10,10,14,.62) 55%, rgba(10,10,14,.80));
 }
 .lfc-create-panel > *,
 .lfc-open-panel .match-card > *,
