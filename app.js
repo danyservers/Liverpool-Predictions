@@ -1145,6 +1145,8 @@ function renderMatchList(containerId, gameType) {
     const node = template.content.cloneNode(true);
     const root = node.querySelector(".match-card");
     root.dataset.matchId = match.id;
+    root.classList.toggle("lfc-open-card", gameType === "lfc");
+    root.classList.toggle("other-open-card", gameType === "other");
     node.querySelector(".fixture").innerHTML = fixtureHtml(match);
     node.querySelector(".match-meta").textContent = match.date || "No date set";
 
@@ -1581,19 +1583,11 @@ function safeRenderStep(name, fn) {
   }
 }
 
-
-function updateBodyTabTheme() {
-  const activeTab = document.querySelector(".tab.active")?.dataset.tab || "";
-  document.body.classList.toggle("squad-background", activeTab === "squad");
-  document.body.classList.toggle("lfc-background", activeTab === "lfc");
-}
-
 function render() {
   if (!currentProfile) return;
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
   safeRenderStep("setDefaultMatchDates", setDefaultMatchDates);
-  safeRenderStep("updateBodyTabTheme", updateBodyTabTheme);
   safeRenderStep("renderScoreboard", renderScoreboard);
   safeRenderStep("renderOpponentSelect", renderOpponentSelect);
   safeRenderStep("renderMatchList lfc", () => renderMatchList("lfcMatches", "lfc"));
@@ -1711,6 +1705,16 @@ async function importBackupFile(file) {
   }
 }
 
+
+function updateBodyTabTheme(activeTab = document.querySelector(".tab.active")?.dataset.tab || "lfc") {
+  document.body.dataset.activeTab = activeTab;
+  document.body.classList.toggle("lfc-background", activeTab === "lfc");
+  document.body.classList.toggle("squad-background", activeTab === "players");
+  document.body.classList.toggle("other-background", activeTab === "other");
+  document.body.classList.toggle("history-background", activeTab === "history");
+  document.body.classList.toggle("seasons-background", activeTab === "seasons");
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
@@ -1723,6 +1727,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(tab.dataset.tab + "Panel").classList.add("active");
+    updateBodyTabTheme(tab.dataset.tab);
   });
 });
 
@@ -2095,4 +2100,4 @@ if ("serviceWorker" in navigator) {
 
 boot();
 
-setTimeout(updateBodyTabTheme, 0);
+updateBodyTabTheme();

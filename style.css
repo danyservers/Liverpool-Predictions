@@ -1538,21 +1538,65 @@ button.primary:hover,
 
 
 /* ==========================================================
-   v38 Liverpool background experiment
-   Adds tab/card background images only. No scoring/app logic.
+   v39 Matchday Redesign
+   Strong visual experiment. Still no scoring/reveal/save logic changes.
    ========================================================== */
 
+/* Page mood: stronger matchday identity */
 body {
-  transition: background-image .35s ease, background-color .35s ease;
+  min-height: 100vh;
+  background:
+    linear-gradient(120deg, rgba(7,8,13,.96), rgba(28,0,8,.90) 42%, rgba(5,6,10,.96)),
+    radial-gradient(circle at 0% 10%, rgba(224, 11, 59, .70), transparent 32%),
+    radial-gradient(circle at 95% 0%, rgba(212,175,55,.14), transparent 28%) !important;
+  background-attachment: fixed !important;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -2;
+  opacity: .17;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(circle at 50% 15%, #000, transparent 72%);
+}
+
+/* Liverpool squad tab: full-page dressing room, deliberately obvious */
 body.squad-background {
   background:
-    linear-gradient(180deg, rgba(5, 6, 10, .78), rgba(5, 6, 10, .92)),
-    radial-gradient(circle at 15% 12%, rgba(224, 11, 59, .18), transparent 34%),
+    linear-gradient(90deg, rgba(3,4,8,.80), rgba(3,4,8,.54), rgba(3,4,8,.88)),
+    linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.86)),
     url("assets/squad-bg.jpg") center center / cover fixed no-repeat !important;
 }
 
+body.squad-background .hero,
+body.squad-background .tabs,
+body.squad-background .stat-card,
+body.squad-background .panel {
+  background: rgba(7, 8, 12, .64) !important;
+  border-color: rgba(255,255,255,.20) !important;
+  backdrop-filter: blur(12px) saturate(1.1);
+}
+
+body.squad-background .squad-tab-panel .panel {
+  box-shadow: 0 24px 80px rgba(0,0,0,.52);
+}
+
+/* Liverpool Matches tab gets a stronger Anfield base mood */
+body.lfc-background {
+  background:
+    linear-gradient(100deg, rgba(5,7,11,.94), rgba(32,3,12,.74), rgba(5,7,11,.94)),
+    radial-gradient(circle at 12% 0%, rgba(224,11,59,.62), transparent 35%),
+    url("assets/lfc-create-bg.jpg") center center / cover fixed no-repeat !important;
+}
+
+/* Put a stadium silhouette behind the app, not hidden by panels */
+body.lfc-background::before,
 body.squad-background::before {
   content: "";
   position: fixed;
@@ -1560,37 +1604,139 @@ body.squad-background::before {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(circle at 50% 20%, rgba(255,255,255,.06), transparent 24%),
-    linear-gradient(90deg, rgba(0,0,0,.45), transparent 40%, rgba(0,0,0,.55));
+    linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.60)),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.12), transparent 30%);
 }
 
-/* Keep content readable over squad photo */
-body.squad-background .hero,
-body.squad-background .tabs,
-body.squad-background .stat-card,
-body.squad-background .panel {
-  background-color: rgba(8, 9, 13, .76);
-  backdrop-filter: blur(8px);
+/* Make the app shell a little more transparent so backgrounds actually matter */
+.app-shell {
+  width: min(100% - 60px, 1260px);
 }
 
-/* Liverpool Create Match panel background */
-.lfc-create-panel {
+.hero,
+.tabs,
+.stat-card,
+.panel {
+  background: rgba(10, 11, 16, .72) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Hero: bolder, cleaner, less generic-card */
+.hero {
+  min-height: 130px;
+  border-radius: 34px;
+  box-shadow: 0 30px 90px rgba(0,0,0,.48);
+  background:
+    linear-gradient(120deg, rgba(12,12,17,.88), rgba(7,8,12,.62)),
+    radial-gradient(circle at 15% 20%, rgba(224,11,59,.24), transparent 36%) !important;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 5vw, 5.1rem);
+  line-height: .92;
+  letter-spacing: -.075em;
+}
+
+/* Convert stats into professional score tiles */
+.stat-grid {
+  gap: 14px;
+}
+
+.stat-card {
+  min-height: 92px;
+  border-radius: 26px;
+  padding: 18px 22px;
   position: relative;
   overflow: hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(224,11,59,.15), transparent 45%);
+  opacity: .8;
+  pointer-events: none;
+}
+
+.stat-card > * {
+  position: relative;
+}
+
+.stat-value {
+  font-size: clamp(1.8rem, 3vw, 2.55rem);
+  text-shadow: 0 4px 22px rgba(0,0,0,.45);
+}
+
+/* Nav: real app-navigation bar */
+.tabs {
+  border-radius: 28px;
+  padding: 8px;
+  box-shadow: 0 22px 70px rgba(0,0,0,.38);
+}
+
+.tab {
+  border-radius: 20px;
+  min-height: 48px;
+  padding: 10px 22px;
+  font-size: .97rem;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #f31345, #9d0624) !important;
+  box-shadow: 0 18px 34px rgba(224,11,59,.36);
+}
+
+/* Panels: slimmer, more open */
+.panel {
+  border-radius: 30px;
+  padding: 24px;
+  box-shadow: 0 26px 75px rgba(0,0,0,.36);
+}
+
+.section-title h2 {
+  font-size: clamp(1.55rem, 2.2vw, 2.1rem);
+}
+
+/* Liverpool create match: make the image dominate the panel */
+.lfc-create-panel {
+  min-height: 315px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.22) !important;
   background:
-    linear-gradient(115deg, rgba(7, 8, 12, .86), rgba(7, 8, 12, .70)),
-    url("assets/lfc-create-bg.jpg") center 45% / cover no-repeat !important;
+    linear-gradient(90deg, rgba(2,4,8,.92) 0%, rgba(2,4,8,.58) 52%, rgba(2,4,8,.86) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.86)),
+    url("assets/lfc-create-bg.jpg") center 46% / cover no-repeat !important;
 }
 
 .lfc-create-panel::before {
+  content: "ANFIELD";
+  position: absolute;
+  right: 26px;
+  top: 16px;
+  font-size: clamp(3rem, 8vw, 7.2rem);
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: -.08em;
+  color: rgba(255,255,255,.075);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lfc-create-panel::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 16% 20%, rgba(224, 11, 59, .17), transparent 28%),
-    linear-gradient(90deg, rgba(0,0,0,.50), rgba(0,0,0,.18), rgba(0,0,0,.58));
   z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.74)),
+    radial-gradient(circle at 18% 28%, rgba(224,11,59,.26), transparent 34%);
 }
 
 .lfc-create-panel > * {
@@ -1598,24 +1744,89 @@ body.squad-background .panel {
   z-index: 1;
 }
 
-/* Open Liverpool match-card background */
-.lfc-open-card {
+.lfc-create-panel .section-title {
+  margin-bottom: 28px;
+}
+
+.lfc-create-panel .eyebrow {
+  font-size: .78rem;
+  background: rgba(0,0,0,.42);
+  display: inline-flex;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(212,175,55,.34);
+}
+
+/* Make create form a glassy pitch-side control bar */
+#lfcMatchForm {
+  grid-template-columns: minmax(330px, 1.8fr) 84px minmax(165px, .65fr) auto;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(5,7,12,.70);
+  border: 1px solid rgba(255,255,255,.20);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 18px 45px rgba(0,0,0,.32);
+}
+
+.lfc-create-panel input,
+.lfc-create-panel select,
+.lfc-create-panel textarea,
+.lfc-create-panel .smart-picker-input,
+.lfc-create-panel .smart-picker-trigger {
+  background: rgba(18,19,26,.90) !important;
+  border-color: rgba(255,255,255,.24) !important;
+}
+
+.lfc-create-panel .manager-toggle-row {
+  margin-top: 12px;
+  background: rgba(5,7,12,.64) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Open Liverpool panel: set up matchday tone */
+.lfc-open-panel {
   position: relative;
   overflow: hidden;
+}
+
+/* Open Liverpool match cards: crowd image should be very visible */
+.lfc-open-card {
+  min-height: 430px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.22) !important;
   background:
-    linear-gradient(120deg, rgba(9, 10, 14, .88), rgba(9, 10, 14, .73)),
+    linear-gradient(90deg, rgba(2,4,8,.95), rgba(2,4,8,.54), rgba(2,4,8,.95)),
+    linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.78)),
     url("assets/lfc-open-match-bg.jpg") center center / cover no-repeat !important;
+  box-shadow: 0 28px 88px rgba(0,0,0,.50);
 }
 
 .lfc-open-card::before {
+  content: "MATCHDAY";
+  position: absolute;
+  right: 22px;
+  top: 14px;
+  z-index: 0;
+  font-size: clamp(2.7rem, 8vw, 6.5rem);
+  line-height: 1;
+  font-weight: 1000;
+  letter-spacing: -.08em;
+  color: rgba(255,255,255,.075);
+  pointer-events: none;
+}
+
+.lfc-open-card::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.30), rgba(0,0,0,.68)),
-    radial-gradient(circle at 20% 10%, rgba(224, 11, 59, .18), transparent 32%);
-  z-index: 0;
+    radial-gradient(circle at 18% 15%, rgba(224,11,59,.24), transparent 30%),
+    linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.74));
 }
 
 .lfc-open-card > * {
@@ -1623,27 +1834,99 @@ body.squad-background .panel {
   z-index: 1;
 }
 
-/* Give fields on image panels a little more opacity */
-.lfc-create-panel input,
-.lfc-create-panel select,
-.lfc-create-panel textarea,
-.lfc-create-panel .smart-picker-input,
-.lfc-create-panel .smart-picker-trigger,
-.lfc-open-card input,
-.lfc-open-card select,
-.lfc-open-card textarea {
-  background-color: rgba(19, 20, 26, .82);
-  border-color: rgba(255,255,255,.18);
+.lfc-open-card .match-card-header {
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border-radius: 18px;
+  background: rgba(0,0,0,.42);
+  border: 1px solid rgba(255,255,255,.15);
+  backdrop-filter: blur(10px);
 }
 
-/* Mobile: image backgrounds should scroll smoothly */
-@media(max-width:760px) {
-  body.squad-background {
+.lfc-open-card .event-panel {
+  background: rgba(8,10,15,.78) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  backdrop-filter: blur(10px);
+}
+
+.lfc-open-card input,
+.lfc-open-card textarea,
+.lfc-open-card select {
+  background: rgba(18,19,26,.94) !important;
+  border-color: rgba(255,255,255,.24) !important;
+}
+
+/* Give panels/cards less samey box feeling globally */
+.match-card:not(.lfc-open-card),
+.history-card,
+.event-panel,
+.card {
+  background: rgba(12, 13, 19, .68) !important;
+  border-color: rgba(255,255,255,.13) !important;
+  backdrop-filter: blur(8px);
+}
+
+/* Buttons: stronger visual intent */
+button,
+.import-label {
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+button:hover,
+.import-label:hover {
+  transform: translateY(-1px);
+}
+
+button[type="submit"],
+.save-prediction-btn,
+.reveal-btn {
+  background: linear-gradient(135deg, #f51043, #b4062b) !important;
+  box-shadow: 0 16px 35px rgba(224,11,59,.32);
+}
+
+/* Mobile: keep image idea but avoid giant cards becoming awkward */
+@media(max-width: 900px) {
+  .app-shell {
+    width: min(100% - 22px, 1260px);
+  }
+
+  #lfcMatchForm {
+    grid-template-columns: 1fr;
+  }
+
+  .lfc-create-panel {
+    min-height: 390px;
+    background-position: center center !important;
+  }
+
+  .lfc-open-card {
+    min-height: 520px;
+  }
+}
+
+@media(max-width: 700px) {
+  body.squad-background,
+  body.lfc-background {
     background-attachment: scroll !important;
   }
 
-  .lfc-create-panel,
+  .hero h1 {
+    font-size: clamp(2.35rem, 12vw, 3.2rem);
+  }
+
+  .lfc-create-panel {
+    min-height: 430px;
+    padding: 18px;
+  }
+
+  .lfc-create-panel::before,
+  .lfc-open-card::before {
+    opacity: .75;
+    right: 14px;
+    top: 12px;
+  }
+
   .lfc-open-card {
-    background-position: center center !important;
+    min-height: auto;
   }
 }
