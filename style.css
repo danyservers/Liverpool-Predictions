@@ -2229,3 +2229,191 @@ body.squad-background {
 .collapsible-content {
   isolation: auto !important;
 }
+
+
+/* ==========================================================
+   v44 Soft Glass Polish
+   Smooths hard boxes into softer transparent layers.
+   CSS-only. No logic changes.
+   ========================================================== */
+
+/* Global: soften the dashboard cards without losing structure */
+.hero,
+.tabs,
+.stat-card,
+.panel {
+  border-color: rgba(255,255,255,.105) !important;
+  box-shadow: 0 18px 58px rgba(0,0,0,.28) !important;
+}
+
+.panel {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012)),
+    rgba(9,10,15,.56) !important;
+}
+
+/* Make text panels over photos feel less like separate boxes */
+.lfc-create-panel,
+.lfc-open-card {
+  border-color: rgba(255,255,255,.18) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.42) !important;
+}
+
+/* Create match: softer glass control bar */
+#lfcMatchForm {
+  background: rgba(5, 7, 12, .42) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.05), 0 16px 45px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(10px) saturate(1.05) !important;
+}
+
+.lfc-create-panel .manager-toggle-row {
+  background: rgba(5, 7, 12, .36) !important;
+  border-color: rgba(255,255,255,.12) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* Inputs become translucent instead of heavy black blocks */
+.lfc-create-panel input,
+.lfc-create-panel select,
+.lfc-create-panel textarea,
+.lfc-create-panel .smart-picker-input,
+.lfc-create-panel .smart-picker-trigger,
+.lfc-open-card input,
+.lfc-open-card select,
+.lfc-open-card textarea,
+.lfc-open-card .smart-picker-input,
+.lfc-open-card .smart-picker-trigger {
+  background: rgba(8, 10, 16, .62) !important;
+  border-color: rgba(255,255,255,.17) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.055) !important;
+}
+
+.lfc-create-panel input:focus,
+.lfc-create-panel select:focus,
+.lfc-create-panel textarea:focus,
+.lfc-create-panel .smart-picker:focus-within .smart-picker-input,
+.lfc-open-card input:focus,
+.lfc-open-card select:focus,
+.lfc-open-card textarea:focus {
+  background: rgba(8, 10, 16, .72) !important;
+  border-color: rgba(212,175,55,.46) !important;
+  box-shadow: 0 0 0 3px rgba(212,175,55,.10), inset 0 1px rgba(255,255,255,.08) !important;
+}
+
+/* Open match card: turn columns into one smooth glass sheet */
+.lfc-open-card .match-card-header {
+  background: rgba(5, 7, 12, .34) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 20px !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.lfc-open-card .event-grid {
+  margin: 0 14px 16px;
+  overflow: hidden;
+  border-radius: 26px;
+  background: rgba(5, 7, 12, .30) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.04), 0 20px 48px rgba(0,0,0,.22) !important;
+  backdrop-filter: blur(9px) saturate(1.05) !important;
+}
+
+.lfc-open-card .event-panel {
+  background: transparent !important;
+  border-right: 1px solid rgba(255,255,255,.09) !important;
+  box-shadow: none !important;
+}
+
+.lfc-open-card .event-panel:last-child {
+  border-right: 0 !important;
+}
+
+/* Prediction/locked/result cards: lighter, more seamless */
+.lfc-open-card .flip-face,
+.lfc-open-card .face-down,
+.lfc-open-card .saved-status,
+.lfc-open-card .prediction-card,
+.lfc-open-card .card,
+.lfc-open-card .actual-scorer-dropdowns,
+.lfc-open-card .own-form,
+.lfc-open-card .own-revealed {
+  background: rgba(5, 7, 12, .28) !important;
+  border-color: rgba(255,255,255,.11) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+.lfc-open-card .face-down {
+  color: rgba(255,220,230,.92) !important;
+  background: rgba(120, 0, 28, .20) !important;
+  border-color: rgba(224,11,59,.22) !important;
+}
+
+/* Reduce strong divider lines */
+.lfc-open-card .pred-line,
+.lfc-open-card .summary-line,
+.lfc-open-card .event-panel,
+.lfc-open-card .match-card-header {
+  border-color: rgba(255,255,255,.085) !important;
+}
+
+/* Number inputs/buttons should feel like controls, not boxes */
+.lfc-open-card .score-row input,
+.lfc-create-panel .smart-picker-button {
+  background: rgba(5, 7, 12, .54) !important;
+}
+
+.lfc-open-card button.ghost,
+.lfc-open-card .ghost,
+.lfc-create-panel .ghost {
+  background: rgba(255,255,255,.055) !important;
+  border-color: rgba(255,255,255,.13) !important;
+}
+
+/* Empty/help boxes should fade into the background */
+.empty,
+.info-note,
+.tip,
+.notice,
+.saved-status {
+  background: rgba(5, 7, 12, .20) !important;
+  border-color: rgba(255,255,255,.075) !important;
+}
+
+/* Keep dropdown menus clear and above the softer glass */
+.smart-picker-menu {
+  background: rgba(12, 14, 21, .96) !important;
+  border-color: rgba(255,255,255,.16) !important;
+  box-shadow: 0 24px 55px rgba(0,0,0,.48) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* History and manager items: less heavy boxes */
+.history-item,
+.manager-item,
+.season-item,
+.compact-item {
+  background: rgba(255,255,255,.035) !important;
+  border-color: rgba(255,255,255,.085) !important;
+  box-shadow: none !important;
+}
+
+/* Mobile: keep glass effect but reduce blur cost/visual clutter */
+@media(max-width: 760px) {
+  .lfc-open-card .event-grid {
+    margin: 0 8px 12px;
+    border-radius: 20px;
+  }
+
+  .lfc-open-card .event-panel {
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,.085) !important;
+  }
+
+  .lfc-open-card .event-panel:last-child {
+    border-bottom: 0 !important;
+  }
+}
