@@ -825,46 +825,21 @@ input[list]::-webkit-calendar-picker-indicator {
 }
 
 
-/* v32 date default + away match toggle */
-.away-toggle {
-  min-height: 46px;
-  align-self: end;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255,255,255,.08);
-  font-weight: 950;
-  cursor: pointer;
-}
-
-.away-toggle input {
-  width: auto;
-  min-height: 0;
-  accent-color: var(--red);
-}
-
-.away-toggle span {
-  color: var(--gold);
-}
-
-
-/* v32.2 compact away checkbox */
+/* v33 safe date + away flag polish */
+.match-form .compact-away-toggle,
 .match-form .away-toggle {
   width: auto;
-  min-width: 86px;
-  max-width: 110px;
+  min-width: 78px;
+  max-width: 98px;
   justify-self: start;
   align-self: end;
-  padding: 8px 12px;
-  min-height: 42px;
+  padding: 8px 11px;
+  min-height: 40px;
   border-radius: 999px;
   gap: 7px;
 }
 
+.match-form .compact-away-toggle input,
 .match-form .away-toggle input {
   width: 16px;
   height: 16px;
@@ -872,6 +847,8 @@ input[list]::-webkit-calendar-picker-indicator {
   margin: 0;
 }
 
+.match-form .compact-away-toggle span,
 .match-form .away-toggle span {
-  font-size: .95rem;
+  font-size: .92rem;
+  color: var(--gold);
 }

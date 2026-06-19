@@ -367,33 +367,46 @@ function setDefaultMatchDates() {
   });
 }
 
+// Display helper only. This does not change scoring, prediction storage, or actual score order.
 function displayTeamsForMatch(match) {
-  const isLiverpoolAway = match.gameType === "lfc" && match.isAway === true;
+  if (match.gameType === "lfc" && match.isAway === true) {
+    return {
+      home: match.away || match.opponent || "Opponent",
+      away: "Liverpool"
+    };
+  }
+
   return {
-    home: isLiverpoolAway ? match.away : match.home,
-    away: isLiverpoolAway ? match.home : match.away
+    home: match.home,
+    away: match.away
   };
 }
 
-async function createLfcMatch(opponent, date, isAway = false) {
-  const team = configState.opponents.find(t => t.name === opponent);
+async function createLfcMatch(opponentName, date, isAway = false) {
+  const cleanOpponent = normaliseName(opponentName);
+  const opponent = (configState.opponents || []).find(o => o.name === cleanOpponent);
+
+  if (!cleanOpponent) {
+    throw new Error("Opponent is missing.");
+  }
+
   await addDoc(collection(db, "matches"), {
     gameType: "lfc",
-    isAway: Boolean(isAway),
     seasonId: configState.activeSeasonId,
     home: "Liverpool",
-    away: opponent,
-    opponent,
-    opponentCode: team?.code || opponent.slice(0, 3).toUpperCase(),
-    date,
-    actualHome: "",
-    actualAway: "",
-    actualScorers: [],
+    away: cleanOpponent,
+    opponent: cleanOpponent,
+    opponentCode: opponent?.code || cleanOpponent.slice(0, 3).toUpperCase(),
+    date: date || todayDateString(),
+    isAway: Boolean(isAway),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     revealed: false,
     calculated: false,
-    discordPosted: false,
-    submitted: { dany: false, isa: false },
-    createdAt: serverTimestamp()
+    submitted: {},
+    actualHome: "",
+    actualAway: "",
+    actualScorers: []
   });
 }
 
@@ -415,7 +428,7 @@ async function createOtherMatch(home, away, date) {
     homeCode: homeTeam?.code || cleanHome.slice(0, 3).toUpperCase(),
     opponent: cleanAway,
     opponentCode: awayTeam?.code || cleanAway.slice(0, 3).toUpperCase(),
-    date: date || "",
+    date: date || todayDateString(),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     revealed: false,
@@ -1562,8 +1575,8 @@ function render() {
   if (!currentProfile) return;
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
-  safeRenderStep("renderScoreboard", renderScoreboard);
   safeRenderStep("setDefaultMatchDates", setDefaultMatchDates);
+  safeRenderStep("renderScoreboard", renderScoreboard);
   safeRenderStep("renderOpponentSelect", renderOpponentSelect);
   safeRenderStep("renderMatchList lfc", () => renderMatchList("lfcMatches", "lfc"));
   safeRenderStep("renderMatchList other", () => renderMatchList("otherMatches", "other"));
@@ -1710,7 +1723,8 @@ document.getElementById("lfcMatchForm").addEventListener("submit", async event =
   try {
     await createLfcMatch(opponent, date, isAway);
     event.target.reset();
-    document.getElementById("lfcAwayInput").checked = false;
+    const awayInput = document.getElementById("lfcAwayInput");
+    if (awayInput) awayInput.checked = false;
     setDefaultMatchDates();
     clearSmartPicker("lfcOpponentPicker");
     setCloudStatus("Match event created", "online");
