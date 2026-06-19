@@ -618,54 +618,70 @@ function renderOpponentSelect() {
   select.value = selected;
 }
 
+function updatePlayerDatalists() {
+  const lfcList = document.getElementById("lfcPlayerOptions");
+  const otherList = document.getElementById("otherPlayerOptions");
+
+  if (lfcList) {
+    lfcList.innerHTML = [...configState.players]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
+      .join("");
+  }
+
+  if (otherList) {
+    otherList.innerHTML = [...(configState.otherPlayers || [])]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(player => `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)} - ${player.points} pts</option>`)
+      .join("");
+  }
+}
+
 function setupScorerPickers(node, match, existingScorers = []) {
+  updatePlayerDatalists();
+
   const scorerFields = [
     node.querySelector('[data-own="scorer0"]'),
     node.querySelector('[data-own="scorer1"]'),
     node.querySelector('[data-own="scorer2"]')
   ];
 
-  const players = match.gameType === "lfc"
-    ? [...configState.players].sort((a, b) => a.name.localeCompare(b.name))
-    : [...(configState.otherPlayers || [])].sort((a, b) => a.name.localeCompare(b.name));
+  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
 
   scorerFields.forEach((field, index) => {
     if (!field) return;
 
-    const select = document.createElement("select");
-    select.dataset.own = field.dataset.own;
-    select.innerHTML = `<option value="">No scorer selected</option>` + players.map(player => {
-      const points = Number(player.points);
-      const label = `${escapeHtml(player.name)} (${points} pt${points === 1 ? "" : "s"})`;
-      return `<option value="${escapeHtml(player.name)}">${label}</option>`;
-    }).join("");
+    const input = document.createElement("input");
+    input.dataset.own = field.dataset.own;
+    input.setAttribute("list", listId);
+    input.placeholder = `Search scorer ${index + 1}`;
+    input.autocomplete = "off";
+    input.value = existingScorers[index] || "";
 
-    select.value = existingScorers[index] || "";
-    field.replaceWith(select);
+    field.replaceWith(input);
   });
 }
 
 function setupActualScorerPicker(node, match, existingActualScorers = []) {
+  updatePlayerDatalists();
+
   const actualField = node.querySelector('[data-actual="actualScorers"]');
   if (!actualField) return;
 
   const wrapper = document.createElement("div");
-  wrapper.className = "actual-scorer-dropdowns";
+  wrapper.className = "actual-scorer-dropdowns searchable-scorers";
   wrapper.dataset.actual = "actualScorersGroup";
 
-  const players = match.gameType === "lfc"
-    ? [...configState.players].sort((a, b) => a.name.localeCompare(b.name))
-    : [...(configState.otherPlayers || [])].sort((a, b) => a.name.localeCompare(b.name));
-  const optionHtml = `<option value="">No scorer selected</option>` + players.map(player => {
-    return `<option value="${escapeHtml(player.name)}">${escapeHtml(player.name)}</option>`;
-  }).join("");
+  const listId = match.gameType === "lfc" ? "lfcPlayerOptions" : "otherPlayerOptions";
 
   for (let i = 0; i < 6; i++) {
-    const select = document.createElement("select");
-    select.dataset.actualScorerIndex = String(i);
-    select.innerHTML = optionHtml;
-    select.value = existingActualScorers[i] || "";
-    wrapper.appendChild(select);
+    const input = document.createElement("input");
+    input.dataset.actualScorerIndex = String(i);
+    input.setAttribute("list", listId);
+    input.placeholder = `Search actual scorer ${i + 1}`;
+    input.autocomplete = "off";
+    input.value = existingActualScorers[i] || "";
+    wrapper.appendChild(input);
   }
 
   actualField.replaceWith(wrapper);
@@ -674,8 +690,8 @@ function setupActualScorerPicker(node, match, existingActualScorers = []) {
 function getActualScorersFromNode(node) {
   const group = node.querySelector('[data-actual="actualScorersGroup"]');
   if (group) {
-    return Array.from(group.querySelectorAll("select"))
-      .map(select => select.value)
+    return Array.from(group.querySelectorAll("input, select"))
+      .map(field => field.value)
       .filter(Boolean);
   }
 
@@ -727,6 +743,49 @@ function clearPredictionDraft(matchId) {
   }
 }
 
+function actualDraftKey(matchId) {
+  return `actualDraft:${currentProfile?.key || "unknown"}:${matchId}`;
+}
+
+function getActualDraft(matchId) {
+  try {
+    return JSON.parse(sessionStorage.getItem(actualDraftKey(matchId)) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function saveActualDraft(matchId, data) {
+  try {
+    sessionStorage.setItem(actualDraftKey(matchId), JSON.stringify(data));
+  } catch {
+    // Ignore draft storage errors.
+  }
+}
+
+function clearActualDraft(matchId) {
+  try {
+    sessionStorage.removeItem(actualDraftKey(matchId));
+  } catch {
+    // Ignore.
+  }
+}
+
+function readActualForm(card) {
+  return {
+    actualHome: card.querySelector('[data-actual="actualHome"]')?.value ?? "",
+    actualAway: card.querySelector('[data-actual="actualAway"]')?.value ?? "",
+    actualScorers: getActualScorersFromNode(card)
+  };
+}
+
+function attachActualDraftListeners(card, matchId) {
+  card.querySelectorAll("[data-actual], [data-actual-scorer-index]").forEach(input => {
+    input.addEventListener("input", () => saveActualDraft(matchId, readActualForm(card)));
+    input.addEventListener("change", () => saveActualDraft(matchId, readActualForm(card)));
+  });
+}
+
 function readPredictionForm(card) {
   return {
     scoreHome: card.querySelector('[data-own="scoreHome"]')?.value ?? "",
@@ -759,14 +818,24 @@ function persistVisibleDraftsBeforeRender() {
     const scorer1 = card.querySelector('[data-own="scorer1"]')?.value ?? "";
     const scorer2 = card.querySelector('[data-own="scorer2"]')?.value ?? "";
 
-    const hasAnyDraftValue = scoreHome !== "" || scoreAway !== "" || scorer0 !== "" || scorer1 !== "" || scorer2 !== "";
+    const hasAnyPredictionDraft = scoreHome !== "" || scoreAway !== "" || scorer0 !== "" || scorer1 !== "" || scorer2 !== "";
 
-    if (hasAnyDraftValue) {
+    if (hasAnyPredictionDraft) {
       savePredictionDraft(matchId, {
         scoreHome,
         scoreAway,
         scorers: [scorer0, scorer1, scorer2]
       });
+    }
+
+    const actualDraft = readActualForm(card);
+    const actualScorers = Array.isArray(actualDraft.actualScorers)
+      ? actualDraft.actualScorers
+      : parseScorers(actualDraft.actualScorers);
+    const hasAnyActualDraft = actualDraft.actualHome !== "" || actualDraft.actualAway !== "" || actualScorers.length > 0;
+
+    if (hasAnyActualDraft) {
+      saveActualDraft(matchId, actualDraft);
     }
   });
 }
@@ -833,9 +902,17 @@ function renderMatchList(containerId, gameType) {
     setupScorerPickers(node, match, existingMyScorers);
     attachDraftListeners(node, match.id);
 
-    node.querySelector('[data-actual="actualHome"]').value = match.actualHome ?? "";
-    node.querySelector('[data-actual="actualAway"]').value = match.actualAway ?? "";
-    setupActualScorerPicker(node, match, parseScorers(match.actualScorers));
+    const localActualDraft = getActualDraft(match.id);
+    const actualSource = localActualDraft || {
+      actualHome: match.actualHome ?? "",
+      actualAway: match.actualAway ?? "",
+      actualScorers: parseScorers(match.actualScorers)
+    };
+
+    node.querySelector('[data-actual="actualHome"]').value = actualSource.actualHome ?? "";
+    node.querySelector('[data-actual="actualAway"]').value = actualSource.actualAway ?? "";
+    setupActualScorerPicker(node, match, parseScorers(actualSource.actualScorers));
+    attachActualDraftListeners(node, match.id);
 
     if (match.revealed) {
       root.classList.add("is-revealed");
@@ -1192,6 +1269,7 @@ function renderHistory() {
 
 function render() {
   if (!currentProfile) return;
+  updatePlayerDatalists();
   renderScoreboard();
   renderOpponentSelect();
   renderMatchList("lfcMatches", "lfc");
@@ -1534,6 +1612,7 @@ document.addEventListener("click", async event => {
     });
 
     clearPredictionDraft(matchId);
+    clearActualDraft(matchId);
     revealBtn.textContent = "Revealed ✓";
     setCloudStatus("Prediction revealed and scores updated", "online");
   } catch (error) {

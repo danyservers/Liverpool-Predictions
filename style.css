@@ -443,3 +443,14 @@ input:focus,textarea:focus,select:focus{border-color:rgba(212,175,55,.8)}
 .import-label input {
   display: none;
 }
+
+
+/* v21 actual draft + searchable player fields */
+.searchable-scorers input,
+.scorer-grid input[list] {
+  min-height: 46px;
+}
+
+input[list]::-webkit-calendar-picker-indicator {
+  opacity: .75;
+}
