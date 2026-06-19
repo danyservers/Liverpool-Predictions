@@ -375,11 +375,11 @@ function displayTeamsForMatch(match) {
   };
 }
 
-async function createLfcMatch(opponent, date) {
+async function createLfcMatch(opponent, date, isAway = false) {
   const team = configState.opponents.find(t => t.name === opponent);
   await addDoc(collection(db, "matches"), {
     gameType: "lfc",
-    isAway: isAway === true,
+    isAway: Boolean(isAway),
     seasonId: configState.activeSeasonId,
     home: "Liverpool",
     away: opponent,

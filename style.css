@@ -850,3 +850,28 @@ input[list]::-webkit-calendar-picker-indicator {
 .away-toggle span {
   color: var(--gold);
 }
+
+
+/* v32.2 compact away checkbox */
+.match-form .away-toggle {
+  width: auto;
+  min-width: 86px;
+  max-width: 110px;
+  justify-self: start;
+  align-self: end;
+  padding: 8px 12px;
+  min-height: 42px;
+  border-radius: 999px;
+  gap: 7px;
+}
+
+.match-form .away-toggle input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+}
+
+.match-form .away-toggle span {
+  font-size: .95rem;
+}
