@@ -179,12 +179,7 @@ function scorePrediction(prediction, match) {
   let points = 0;
   const breakdown = [];
 
-  if (
-    prediction.scoreHome !== "" &&
-    prediction.scoreAway !== "" &&
-    String(prediction.scoreHome) === String(match.actualHome) &&
-    String(prediction.scoreAway) === String(match.actualAway)
-  ) {
+  if (isExactScoreCorrect(prediction, match)) {
     points += 5;
     breakdown.push("Exact score +5");
   }
@@ -380,6 +375,49 @@ function displayTeamsForMatch(match) {
     home: match.home,
     away: match.away
   };
+}
+
+function displayResultForMatch(match) {
+  const teams = displayTeamsForMatch(match);
+
+  if (match.gameType === "lfc" && match.isAway === true) {
+    return {
+      home: teams.home,
+      away: teams.away,
+      homeScore: match.actualAway,
+      awayScore: match.actualHome
+    };
+  }
+
+  return {
+    home: teams.home,
+    away: teams.away,
+    homeScore: match.actualHome,
+    awayScore: match.actualAway
+  };
+}
+
+function isExactScoreCorrect(prediction, match) {
+  if (!prediction) return false;
+  if (prediction.scoreHome === "" || prediction.scoreAway === "") return false;
+
+  const predHome = String(prediction.scoreHome);
+  const predAway = String(prediction.scoreAway);
+  const actualHome = String(match.actualHome);
+  const actualAway = String(match.actualAway);
+
+  // Normal internal Liverpool-first score comparison.
+  if (predHome === actualHome && predAway === actualAway) {
+    return true;
+  }
+
+  // Away-match safety: if the actual result was typed in displayed order
+  // (opponent first, Liverpool second), still award exact score correctly.
+  if (match.gameType === "lfc" && match.isAway === true) {
+    return predHome === actualAway && predAway === actualHome;
+  }
+
+  return false;
 }
 
 async function createLfcMatch(opponentName, date, isAway = false) {
@@ -1451,7 +1489,7 @@ function showRoundSummary(match, predictionMap = null) {
   content.innerHTML = `
     <div class="actual-summary">
       <div>
-        <h3>${escapeHtml(displayTeamsForMatch(match).home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(displayTeamsForMatch(match).away)}</h3>
+        <h3>${escapeHtml(displayResultForMatch(match).home)} ${escapeHtml(displayResultForMatch(match).homeScore)}-${escapeHtml(displayResultForMatch(match).awayScore)} ${escapeHtml(displayResultForMatch(match).away)}</h3>
         <p>Actual scorers: <strong>${escapeHtml(parseScorers(match.actualScorers).join(", ") || "-")}</strong></p>
       </div>
       <div class="actual-badge">${escapeHtml(match.gameType === "lfc" ? "Liverpool" : "Other")}</div>
@@ -1529,7 +1567,7 @@ function renderHistory() {
     item.className = "history-item";
     item.innerHTML = `
       <div class="history-main">
-        <strong>${escapeHtml(displayTeamsForMatch(match).home)} ${escapeHtml(match.actualHome)}-${escapeHtml(match.actualAway)} ${escapeHtml(displayTeamsForMatch(match).away)}</strong>
+        <strong>${escapeHtml(displayResultForMatch(match).home)} ${escapeHtml(displayResultForMatch(match).homeScore)}-${escapeHtml(displayResultForMatch(match).awayScore)} ${escapeHtml(displayResultForMatch(match).away)}</strong>
         <div class="muted">${escapeHtml(match.seasonId)} • ${match.gameType === "lfc" ? "Liverpool" : "Other"} • Round winner: ${escapeHtml(match.summary?.roundWinner || "-")}</div>
         ${summaryCardHtml(match)}
       </div>

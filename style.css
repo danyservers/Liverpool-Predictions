@@ -852,3 +852,32 @@ input[list]::-webkit-calendar-picker-indicator {
   font-size: .92rem;
   color: var(--gold);
 }
+
+
+/* v34 away scoring/display polish */
+.match-form .compact-away-toggle,
+.match-form .away-toggle {
+  width: auto !important;
+  min-width: 76px !important;
+  max-width: 94px !important;
+  justify-self: start !important;
+  align-self: end !important;
+  padding: 8px 11px !important;
+  min-height: 40px !important;
+  border-radius: 999px !important;
+  gap: 7px !important;
+}
+
+.match-form .compact-away-toggle input,
+.match-form .away-toggle input {
+  width: 16px !important;
+  height: 16px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+}
+
+.match-form .compact-away-toggle span,
+.match-form .away-toggle span {
+  font-size: .92rem !important;
+  color: var(--gold) !important;
+}
