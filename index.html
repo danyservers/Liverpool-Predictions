@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=26" />
+  <link rel="stylesheet" href="style.css?v=27" />
 </head>
 <body>
   <div class="app-shell">
@@ -134,27 +134,21 @@
             </div>
           </div>
           <form id="otherMatchForm" class="other-form">
-            <div class="team-picker">
-              <input id="otherHomeSearch" placeholder="Search home team" autocomplete="off" />
-              <select id="otherHomeSelect" required></select>
-            </div>
-            <div class="team-picker">
-              <input id="otherAwaySearch" placeholder="Search away team" autocomplete="off" />
-              <select id="otherAwaySelect" required></select>
-            </div>
+            <div class="smart-picker" id="otherHomePicker" data-placeholder="Search or choose home team"></div>
+            <div class="smart-picker" id="otherAwayPicker" data-placeholder="Search or choose away team"></div>
             <input id="otherDateInput" type="date" />
             <button type="submit">Create match</button>
           </form>
-          <div class="inline-add">
-            <input id="newOtherTeamInput" placeholder="Add other team, e.g. Denmark" />
-            <input id="newOtherTeamCodeInput" placeholder="Badge, e.g. DEN" maxlength="5" />
-            <button type="button" class="ghost" id="addOtherTeamBtn">Add team</button>
-          </div>
           <div class="manager-toggle-row">
             <span id="otherTeamCount" class="muted">Teams saved</span>
-            <button type="button" class="ghost" id="toggleOtherTeamsBtn">Open team manager</button>
+            <button type="button" class="ghost" id="toggleOtherTeamsBtn">Manage teams</button>
           </div>
           <div id="otherTeamsManager" class="collapsible-content collapsed">
+            <div class="inline-add">
+              <input id="newOtherTeamInput" placeholder="Add other team, e.g. Denmark" />
+              <input id="newOtherTeamCodeInput" placeholder="Badge, e.g. DEN" maxlength="5" />
+              <button type="button" class="ghost" id="addOtherTeamBtn">Add team</button>
+            </div>
             <input id="otherTeamSearchInput" class="manager-search" placeholder="Search saved teams" />
             <div id="otherTeamList" class="manager-list compact-list"></div>
           </div>
@@ -332,7 +326,7 @@
   <datalist id="lfcPlayerOptions"></datalist>
   <datalist id="otherPlayerOptions"></datalist>
 
-  <script type="module" src="firebase-config.js?v=26"></script>
-  <script type="module" src="app.js?v=26"></script>
+  <script type="module" src="firebase-config.js?v=27"></script>
+  <script type="module" src="app.js?v=27"></script>
 </body>
 </html>

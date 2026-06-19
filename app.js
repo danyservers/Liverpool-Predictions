@@ -529,16 +529,8 @@ function totals(gameType, seasonId = null) {
 
 function renderOtherTeamSelects() {
   const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
-  const datalist = document.getElementById("otherTeamOptions");
-
-  if (datalist) {
-    datalist.innerHTML = teams
-      .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
-      .join("");
-  }
-
-  renderTeamSelect("otherHomeSelect", "otherHomeSearch", teams, "Choose home team");
-  renderTeamSelect("otherAwaySelect", "otherAwaySearch", teams, "Choose away team");
+  setupSmartPicker("otherHomePicker", teams, "Search or choose home team");
+  setupSmartPicker("otherAwayPicker", teams, "Search or choose away team");
 }
 
 function renderOtherTeamList() {
@@ -619,8 +611,14 @@ function renderScoreboard() {
   `;
 }
 
+const smartPickers = {};
+
+function normalizeChoice(value) {
+  return normaliseName(value).toLowerCase();
+}
+
 function resolveSavedTeamName(value, teams) {
-  const query = normaliseName(value).toLowerCase();
+  const query = normalizeChoice(value);
   if (!query) return "";
 
   const exact = teams.find(team =>
@@ -644,55 +642,201 @@ function resolveSavedTeamName(value, teams) {
   return "";
 }
 
-function renderTeamSelect(selectId, searchId, teams, placeholder = "Choose team") {
-  const select = document.getElementById(selectId);
-  const search = document.getElementById(searchId);
-  if (!select || !search) return;
+function getSmartPickerValue(pickerId) {
+  const state = smartPickers[pickerId];
+  if (!state) return "";
+  return state.selected || resolveSavedTeamName(state.input.value, state.items);
+}
 
-  const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
-  const query = search.value.trim().toLowerCase();
+function clearSmartPicker(pickerId) {
+  const state = smartPickers[pickerId];
+  if (!state) return;
+  state.selected = "";
+  state.input.value = "";
+  state.root.classList.remove("has-selection");
+}
 
-  const filtered = query
-    ? sortedTeams.filter(team =>
-        team.name.toLowerCase().includes(query) ||
-        (team.code || "").toLowerCase().includes(query)
-      )
-    : sortedTeams;
+function setupSmartPicker(pickerId, items, placeholder = "Search or choose") {
+  const root = document.getElementById(pickerId);
+  if (!root) return;
 
-  const previous = select.value;
-  select.innerHTML =
-    `<option value="">${escapeHtml(placeholder)}</option>` +
-    filtered.map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.name)}${team.code ? ` (${escapeHtml(team.code)})` : ""}</option>`).join("");
+  const previous = smartPickers[pickerId]?.selected || "";
+  const oldText = smartPickers[pickerId]?.input?.value || "";
 
-  if (filtered.some(team => team.name === previous)) {
-    select.value = previous;
+  root.innerHTML = `
+    <div class="smart-picker-control">
+      <input type="text" class="smart-picker-input" placeholder="${escapeHtml(placeholder)}" autocomplete="off" />
+      <button type="button" class="smart-picker-button" aria-label="Open list">⌄</button>
+    </div>
+    <div class="smart-picker-menu"></div>
+  `;
+
+  const input = root.querySelector(".smart-picker-input");
+  const button = root.querySelector(".smart-picker-button");
+  const menu = root.querySelector(".smart-picker-menu");
+
+  const state = {
+    root,
+    input,
+    button,
+    menu,
+    items: [...items].sort((a, b) => a.name.localeCompare(b.name)),
+    selected: previous
+  };
+
+  smartPickers[pickerId] = state;
+
+  if (previous && state.items.some(item => item.name === previous)) {
+    input.value = previous;
+    state.selected = previous;
+    root.classList.add("has-selection");
+  } else if (oldText) {
+    input.value = oldText;
   }
 
-  if (query && filtered.length === 1) {
-    select.value = filtered[0].name;
-  }
+  const renderMenu = (force = false) => {
+    const query = input.value.trim().toLowerCase();
+    const filtered = query
+      ? state.items.filter(item =>
+          item.name.toLowerCase().includes(query) ||
+          (item.code || "").toLowerCase().includes(query)
+        )
+      : state.items;
 
-  search.oninput = () => renderTeamSelect(selectId, searchId, teams, placeholder);
-  search.onchange = () => {
-    const resolved = resolveSavedTeamName(search.value, teams);
-    if (resolved) select.value = resolved;
+    const visible = filtered.slice(0, 30);
+
+    menu.innerHTML = visible.length
+      ? visible.map(item => `
+          <button type="button" class="smart-picker-option" data-name="${escapeHtml(item.name)}">
+            <span>${escapeHtml(item.name)}</span>
+            <small>${escapeHtml(item.code || "")}</small>
+          </button>
+        `).join("")
+      : `<div class="smart-picker-empty">No saved team found</div>`;
+
+    if (force) menu.classList.add("open");
   };
-  select.onchange = () => {
-    if (select.value) search.value = select.value;
+
+  const selectItem = name => {
+    state.selected = name;
+    input.value = name;
+    root.classList.add("has-selection");
+    menu.classList.remove("open");
   };
+
+  input.addEventListener("focus", () => renderMenu(true));
+  input.addEventListener("click", () => renderMenu(true));
+  input.addEventListener("input", () => {
+    state.selected = "";
+    root.classList.remove("has-selection");
+    renderMenu(true);
+  });
+  input.addEventListener("keydown", event => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      renderMenu(true);
+      menu.querySelector(".smart-picker-option")?.focus();
+    }
+    if (event.key === "Enter") {
+      const resolved = resolveSavedTeamName(input.value, state.items);
+      if (resolved) {
+        event.preventDefault();
+        selectItem(resolved);
+      }
+    }
+    if (event.key === "Escape") menu.classList.remove("open");
+  });
+
+  button.addEventListener("click", () => {
+    input.focus();
+    renderMenu(true);
+  });
+
+  menu.addEventListener("mousedown", event => {
+    const option = event.target.closest(".smart-picker-option");
+    if (!option) return;
+    event.preventDefault();
+    selectItem(option.dataset.name);
+  });
+
+  menu.addEventListener("keydown", event => {
+    const option = event.target.closest(".smart-picker-option");
+    if (!option) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      selectItem(option.dataset.name);
+      input.focus();
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      option.nextElementSibling?.focus();
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      option.previousElementSibling?.focus() || input.focus();
+    }
+  });
+
+  input.addEventListener("blur", () => {
+    setTimeout(() => menu.classList.remove("open"), 180);
+  });
+
+  renderMenu(false);
 }
 
 function renderOpponentSelect() {
-  const teams = [...(configState.opponents || [])].sort((a,b) => a.name.localeCompare(b.name));
-  const datalist = document.getElementById("lfcOpponentOptions");
+  const opponents = [...(configState.opponents || [])].sort((a, b) => a.name.localeCompare(b.name));
+  setupSmartPicker("lfcOpponentPicker", opponents, "Search or choose opponent");
+  renderOpponentManager();
+}
 
-  if (datalist) {
-    datalist.innerHTML = teams
-      .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
-      .join("");
-  }
+function renderOpponentManager() {
+  const list = document.getElementById("opponentList");
+  const count = document.getElementById("opponentCount");
+  const searchInput = document.getElementById("opponentSearchInput");
+  if (!list) return;
 
-  renderTeamSelect("lfcOpponentSelect", "lfcOpponentSearch", teams, "Choose opponent");
+  const teams = [...(configState.opponents || [])].sort((a, b) => a.name.localeCompare(b.name));
+  if (count) count.textContent = `${teams.length} opponents saved`;
+
+  const query = (searchInput?.value || "").trim().toLowerCase();
+  const filtered = query
+    ? teams.filter(team => team.name.toLowerCase().includes(query) || (team.code || "").toLowerCase().includes(query))
+    : teams;
+
+  list.innerHTML = "";
+  filtered.forEach(team => {
+    const item = document.createElement("div");
+    item.className = "manager-item compact-item";
+    item.innerHTML = `
+      <div>
+        <strong>${escapeHtml(team.name)}</strong>
+        <div class="muted">${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</div>
+      </div>
+      <div class="manager-item-actions">
+        <button type="button" class="ghost rename">Rename</button>
+        <button type="button" class="ghost danger remove">Remove</button>
+      </div>
+    `;
+
+    item.querySelector(".rename").addEventListener("click", async () => {
+      const nextName = prompt("Opponent name:", team.name);
+      if (!nextName) return;
+      const nextCode = prompt("Badge code:", team.code || nextName.slice(0,3).toUpperCase());
+      team.name = normaliseName(nextName);
+      team.code = normaliseName(nextCode || nextName.slice(0,3)).toUpperCase();
+      await saveConfig({ opponents: configState.opponents });
+    });
+
+    item.querySelector(".remove").addEventListener("click", async () => {
+      if (!confirm(`Remove ${team.name}?`)) return;
+      configState.opponents = (configState.opponents || []).filter(t => t.id !== team.id);
+      await saveConfig({ opponents: configState.opponents });
+    });
+
+    list.appendChild(item);
+  });
 }
 
 function fixtureHtml(match) {
@@ -1400,40 +1544,27 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 document.getElementById("lfcMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const opponentSelect = document.getElementById("lfcOpponentSelect");
-  const opponentSearch = document.getElementById("lfcOpponentSearch");
-  const opponent = opponentSelect.value || resolveSavedTeamName(opponentSearch.value, configState.opponents);
+  const opponent = getSmartPickerValue("lfcOpponentPicker");
 
   if (!opponent) {
     alert("Please choose an opponent from the saved opponent list, or add it first.");
     return;
   }
 
-  opponentSelect.value = opponent;
-  opponentSearch.value = opponent;
   await createLfcMatch(opponent, document.getElementById("lfcDateInput").value);
   event.target.reset();
+  clearSmartPicker("lfcOpponentPicker");
 });
 
 document.getElementById("otherMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const homeSelect = document.getElementById("otherHomeSelect");
-  const awaySelect = document.getElementById("otherAwaySelect");
-  const homeSearch = document.getElementById("otherHomeSearch");
-  const awaySearch = document.getElementById("otherAwaySearch");
-
-  const home = homeSelect.value || resolveSavedTeamName(homeSearch.value, configState.otherTeams || []);
-  const away = awaySelect.value || resolveSavedTeamName(awaySearch.value, configState.otherTeams || []);
+  const home = getSmartPickerValue("otherHomePicker");
+  const away = getSmartPickerValue("otherAwayPicker");
 
   if (!home || !away) {
     alert("Please choose both teams from the saved team list, or add the team first.");
     return;
   }
-
-  homeSelect.value = home;
-  awaySelect.value = away;
-  homeSearch.value = home;
-  awaySearch.value = away;
 
   if (home === away) {
     alert("Choose two different teams.");
@@ -1446,7 +1577,20 @@ document.getElementById("otherMatchForm").addEventListener("submit", async event
     document.getElementById("otherDateInput").value
   );
   event.target.reset();
+  clearSmartPicker("otherHomePicker");
+  clearSmartPicker("otherAwayPicker");
 });
+
+document.getElementById("toggleOpponentManagerBtn")?.addEventListener("click", () => {
+  const content = document.getElementById("opponentManager");
+  const btn = document.getElementById("toggleOpponentManagerBtn");
+  if (!content || !btn) return;
+
+  const collapsed = content.classList.toggle("collapsed");
+  btn.textContent = collapsed ? "Manage opponents" : "Hide opponent manager";
+});
+
+document.getElementById("opponentSearchInput")?.addEventListener("input", renderOpponentManager);
 
 document.getElementById("addOpponentBtn").addEventListener("click", async () => {
   const name = normaliseName(document.getElementById("newOpponentInput").value);
