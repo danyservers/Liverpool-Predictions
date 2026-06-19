@@ -528,19 +528,17 @@ function totals(gameType, seasonId = null) {
 }
 
 function renderOtherTeamSelects() {
-  const homeInput = document.getElementById("otherHomeSelect");
-  const awayInput = document.getElementById("otherAwaySelect");
-  const datalist = document.getElementById("otherTeamOptions");
-  if (!homeInput || !awayInput || !datalist) return;
-
   const teams = [...(configState.otherTeams || [])].sort((a, b) => a.name.localeCompare(b.name));
+  const datalist = document.getElementById("otherTeamOptions");
 
-  datalist.innerHTML = teams
-    .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
-    .join("");
+  if (datalist) {
+    datalist.innerHTML = teams
+      .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
+      .join("");
+  }
 
-  setupTeamCombo("otherHomeSelect", "otherHomeMenu", teams);
-  setupTeamCombo("otherAwaySelect", "otherAwayMenu", teams);
+  renderTeamSelect("otherHomeSelect", "otherHomeSearch", teams, "Choose home team");
+  renderTeamSelect("otherAwaySelect", "otherAwaySearch", teams, "Choose away team");
 }
 
 function renderOtherTeamList() {
@@ -621,8 +619,6 @@ function renderScoreboard() {
   `;
 }
 
-const teamCombos = {};
-
 function resolveSavedTeamName(value, teams) {
   const query = normaliseName(value).toLowerCase();
   if (!query) return "";
@@ -648,130 +644,55 @@ function resolveSavedTeamName(value, teams) {
   return "";
 }
 
-function renderTeamComboMenu(inputId, forceOpen = false) {
-  const combo = teamCombos[inputId];
-  if (!combo) return;
+function renderTeamSelect(selectId, searchId, teams, placeholder = "Choose team") {
+  const select = document.getElementById(selectId);
+  const search = document.getElementById(searchId);
+  if (!select || !search) return;
 
-  const { input, menu } = combo;
-  const teams = [...(combo.teams || [])].sort((a, b) => a.name.localeCompare(b.name));
-  const query = input.value.trim().toLowerCase();
+  const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+  const query = search.value.trim().toLowerCase();
 
   const filtered = query
-    ? teams.filter(team =>
+    ? sortedTeams.filter(team =>
         team.name.toLowerCase().includes(query) ||
         (team.code || "").toLowerCase().includes(query)
       )
-    : teams;
+    : sortedTeams;
 
-  const visible = filtered.slice(0, 24);
+  const previous = select.value;
+  select.innerHTML =
+    `<option value="">${escapeHtml(placeholder)}</option>` +
+    filtered.map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.name)}${team.code ? ` (${escapeHtml(team.code)})` : ""}</option>`).join("");
 
-  menu.innerHTML = visible.length
-    ? visible.map(team => `
-        <button type="button" class="combo-option" data-team="${escapeHtml(team.name)}">
-          <span>${escapeHtml(team.name)}</span>
-          <small>${escapeHtml(team.code || "")}</small>
-        </button>
-      `).join("")
-    : `<div class="combo-empty">No saved team found</div>`;
-
-  if (forceOpen || document.activeElement === input || query) {
-    menu.classList.add("open");
-  }
-}
-
-function setupTeamCombo(inputId, menuId, teams) {
-  const input = document.getElementById(inputId);
-  const menu = document.getElementById(menuId);
-  if (!input || !menu) return;
-
-  teamCombos[inputId] = { input, menu, teams: [...teams] };
-
-  if (input.dataset.comboReady === "true") {
-    renderTeamComboMenu(inputId, false);
-    return;
+  if (filtered.some(team => team.name === previous)) {
+    select.value = previous;
   }
 
-  input.dataset.comboReady = "true";
+  if (query && filtered.length === 1) {
+    select.value = filtered[0].name;
+  }
 
-  input.addEventListener("focus", () => renderTeamComboMenu(inputId, true));
-  input.addEventListener("click", () => renderTeamComboMenu(inputId, true));
-  input.addEventListener("input", () => renderTeamComboMenu(inputId, true));
-  input.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      menu.classList.remove("open");
-    }
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      renderTeamComboMenu(inputId, true);
-      menu.querySelector(".combo-option")?.focus();
-    }
-  });
-  input.addEventListener("blur", () => {
-    setTimeout(() => menu.classList.remove("open"), 180);
-  });
-
-  menu.addEventListener("mousedown", event => {
-    const option = event.target.closest(".combo-option");
-    if (!option) return;
-
-    event.preventDefault();
-    input.value = option.dataset.team;
-    menu.classList.remove("open");
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  });
-
-  menu.addEventListener("keydown", event => {
-    const option = event.target.closest(".combo-option");
-    if (!option) return;
-
-    if (event.key === "Enter") {
-      event.preventDefault();
-      input.value = option.dataset.team;
-      menu.classList.remove("open");
-      input.focus();
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      option.nextElementSibling?.focus();
-    }
-
-    if (event.key === "ArrowUp") {
-      event.preventDefault();
-      option.previousElementSibling?.focus() || input.focus();
-    }
-  });
-
-  renderTeamComboMenu(inputId, false);
+  search.oninput = () => renderTeamSelect(selectId, searchId, teams, placeholder);
+  search.onchange = () => {
+    const resolved = resolveSavedTeamName(search.value, teams);
+    if (resolved) select.value = resolved;
+  };
+  select.onchange = () => {
+    if (select.value) search.value = select.value;
+  };
 }
-
-document.addEventListener("click", event => {
-  const toggle = event.target.closest(".combo-toggle");
-  if (!toggle) return;
-
-  const inputId = toggle.dataset.comboTarget;
-  const combo = teamCombos[inputId];
-  if (!combo) return;
-
-  combo.input.focus();
-  renderTeamComboMenu(inputId, true);
-});
 
 function renderOpponentSelect() {
-  const input = document.getElementById("lfcOpponentSelect");
-  const datalist = document.getElementById("lfcOpponentOptions");
-  if (!input || !datalist) return;
-
   const teams = [...(configState.opponents || [])].sort((a,b) => a.name.localeCompare(b.name));
+  const datalist = document.getElementById("lfcOpponentOptions");
 
-  datalist.innerHTML = teams
-    .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
-    .join("");
+  if (datalist) {
+    datalist.innerHTML = teams
+      .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
+      .join("");
+  }
 
-  setupTeamCombo("lfcOpponentSelect", "lfcOpponentMenu", teams);
+  renderTeamSelect("lfcOpponentSelect", "lfcOpponentSearch", teams, "Choose opponent");
 }
 
 function fixtureHtml(match) {
@@ -1479,33 +1400,40 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 document.getElementById("lfcMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const opponentInput = document.getElementById("lfcOpponentSelect");
-  const opponent = resolveSavedTeamName(opponentInput.value, configState.opponents);
+  const opponentSelect = document.getElementById("lfcOpponentSelect");
+  const opponentSearch = document.getElementById("lfcOpponentSearch");
+  const opponent = opponentSelect.value || resolveSavedTeamName(opponentSearch.value, configState.opponents);
 
   if (!opponent) {
     alert("Please choose an opponent from the saved opponent list, or add it first.");
     return;
   }
 
-  opponentInput.value = opponent;
+  opponentSelect.value = opponent;
+  opponentSearch.value = opponent;
   await createLfcMatch(opponent, document.getElementById("lfcDateInput").value);
   event.target.reset();
 });
 
 document.getElementById("otherMatchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const homeInput = document.getElementById("otherHomeSelect");
-  const awayInput = document.getElementById("otherAwaySelect");
-  const home = resolveSavedTeamName(homeInput.value, configState.otherTeams || []);
-  const away = resolveSavedTeamName(awayInput.value, configState.otherTeams || []);
+  const homeSelect = document.getElementById("otherHomeSelect");
+  const awaySelect = document.getElementById("otherAwaySelect");
+  const homeSearch = document.getElementById("otherHomeSearch");
+  const awaySearch = document.getElementById("otherAwaySearch");
+
+  const home = homeSelect.value || resolveSavedTeamName(homeSearch.value, configState.otherTeams || []);
+  const away = awaySelect.value || resolveSavedTeamName(awaySearch.value, configState.otherTeams || []);
 
   if (!home || !away) {
     alert("Please choose both teams from the saved team list, or add the team first.");
     return;
   }
 
-  homeInput.value = home;
-  awayInput.value = away;
+  homeSelect.value = home;
+  awaySelect.value = away;
+  homeSearch.value = home;
+  awaySearch.value = away;
 
   if (home === away) {
     alert("Choose two different teams.");

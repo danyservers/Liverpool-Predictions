@@ -679,3 +679,23 @@ input[list]::-webkit-calendar-picker-indicator {
 .combo-option small {
   color: var(--muted);
 }
+
+
+/* v26 native team picker fix */
+.team-picker {
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 34%);
+  gap: 8px;
+  width: 100%;
+}
+
+.team-picker input,
+.team-picker select {
+  min-height: 46px;
+}
+
+@media(max-width:760px){
+  .team-picker {
+    grid-template-columns: 1fr;
+  }
+}
