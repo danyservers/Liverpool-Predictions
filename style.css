@@ -2108,3 +2108,74 @@ body.lfc-background {
     min-height: auto !important;
   }
 }
+
+
+/* ==========================================================
+   v42 clean photo backgrounds
+   Main Liverpool Matches page background normal.
+   Photos stay only where requested.
+   Artificial ANFIELD/MATCHDAY text removed.
+   ========================================================== */
+
+/* Normal dark/red dashboard background for Liverpool Matches page */
+body.lfc-background {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(199, 0, 32, .42), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgba(212, 175, 55, .055), transparent 26%),
+    linear-gradient(135deg, #07080c 0%, #14050a 42%, #07080c 100%) !important;
+  background-attachment: fixed !important;
+  background-color: #07080c !important;
+}
+
+body.lfc-background::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Remove artificial overlay words added in v39/v40 */
+.lfc-create-panel::before,
+.lfc-open-card::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* Keep Anfield stadium photo only inside Create match event */
+.lfc-create-panel {
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,.48), rgba(0,0,0,.20), rgba(0,0,0,.55)),
+    url("lfc-create-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center 46% !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Keep crowd photo only inside open Liverpool match cards */
+.lfc-open-card {
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,.58), rgba(0,0,0,.24), rgba(0,0,0,.66)),
+    url("lfc-open-match-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Prevent the page-level stadium photo from bleeding through normal panels */
+body.lfc-background .hero,
+body.lfc-background .tabs,
+body.lfc-background .stat-card,
+body.lfc-background .panel:not(.lfc-create-panel) {
+  background-color: rgba(10, 11, 16, .72) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Keep squad tab full-page dressing-room background */
+body.squad-background {
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.58)),
+    url("squad-bg.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  background-color: #05060a !important;
+}
