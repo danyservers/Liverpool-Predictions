@@ -597,3 +597,33 @@ input[list]::-webkit-calendar-picker-indicator {
 .backup-row {
   margin-top: 8px;
 }
+
+
+/* v24 final icon + combo picker fixes */
+.combo-option:focus {
+  outline: 2px solid var(--gold);
+  background: rgba(255,255,255,.1);
+}
+
+.combo-box input {
+  width: 100%;
+}
+
+.hero {
+  gap: 22px;
+}
+
+.account-actions {
+  max-width: 320px;
+}
+
+.account-row,
+.backup-row {
+  gap: 8px;
+}
+
+.account-badge {
+  color: var(--gold);
+  background: rgba(212,175,55,.08);
+  border-color: rgba(212,175,55,.25);
+}

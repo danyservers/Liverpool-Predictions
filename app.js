@@ -624,16 +624,21 @@ function resolveSavedTeamName(value, teams) {
   const query = normaliseName(value).toLowerCase();
   if (!query) return "";
 
-  const exact = teams.find(team => team.name.toLowerCase() === query || (team.code || "").toLowerCase() === query);
+  const exact = teams.find(team =>
+    team.name.toLowerCase() === query ||
+    (team.code || "").toLowerCase() === query
+  );
   if (exact) return exact.name;
 
   const startsWith = teams.filter(team =>
-    team.name.toLowerCase().startsWith(query) || (team.code || "").toLowerCase().startsWith(query)
+    team.name.toLowerCase().startsWith(query) ||
+    (team.code || "").toLowerCase().startsWith(query)
   );
   if (startsWith.length === 1) return startsWith[0].name;
 
   const contains = teams.filter(team =>
-    team.name.toLowerCase().includes(query) || (team.code || "").toLowerCase().includes(query)
+    team.name.toLowerCase().includes(query) ||
+    (team.code || "").toLowerCase().includes(query)
   );
   if (contains.length === 1) return contains[0].name;
 
@@ -645,16 +650,22 @@ function setupTeamCombo(inputId, menuId, teams) {
   const menu = document.getElementById(menuId);
   if (!input || !menu) return;
 
-  const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+  input._comboTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
 
   const renderMenu = () => {
+    const sortedTeams = input._comboTeams || [];
     const query = input.value.trim().toLowerCase();
     const filtered = query
-      ? sortedTeams.filter(team => team.name.toLowerCase().includes(query) || (team.code || "").toLowerCase().includes(query))
+      ? sortedTeams.filter(team =>
+          team.name.toLowerCase().includes(query) ||
+          (team.code || "").toLowerCase().includes(query)
+        )
       : sortedTeams;
 
-    menu.innerHTML = filtered.slice(0, 18).length
-      ? filtered.slice(0, 18).map(team => `
+    const visible = filtered.slice(0, 20);
+
+    menu.innerHTML = visible.length
+      ? visible.map(team => `
           <button type="button" class="combo-option" data-team="${escapeHtml(team.name)}">
             <span>${escapeHtml(team.name)}</span>
             <small>${escapeHtml(team.code || "")}</small>
@@ -665,17 +676,56 @@ function setupTeamCombo(inputId, menuId, teams) {
     menu.classList.add("open");
   };
 
-  input.onfocus = renderMenu;
-  input.oninput = renderMenu;
-  input.onblur = () => setTimeout(() => menu.classList.remove("open"), 150);
+  if (input.dataset.comboReady === "true") return;
+  input.dataset.comboReady = "true";
 
-  menu.onmousedown = event => {
+  input.addEventListener("focus", renderMenu);
+  input.addEventListener("click", renderMenu);
+  input.addEventListener("input", renderMenu);
+  input.addEventListener("keydown", event => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      menu.querySelector(".combo-option")?.focus();
+    }
+    if (event.key === "Escape") {
+      menu.classList.remove("open");
+    }
+  });
+  input.addEventListener("blur", () => {
+    setTimeout(() => menu.classList.remove("open"), 180);
+  });
+
+  menu.addEventListener("mousedown", event => {
     const option = event.target.closest(".combo-option");
     if (!option) return;
+    event.preventDefault();
     input.value = option.dataset.team;
     menu.classList.remove("open");
     input.dispatchEvent(new Event("change", { bubbles: true }));
-  };
+  });
+
+  menu.addEventListener("keydown", event => {
+    const option = event.target.closest(".combo-option");
+    if (!option) return;
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      input.value = option.dataset.team;
+      menu.classList.remove("open");
+      input.focus();
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      option.nextElementSibling?.focus();
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      option.previousElementSibling?.focus() || input.focus();
+    }
+  });
 }
 
 function renderOpponentSelect() {
@@ -683,7 +733,7 @@ function renderOpponentSelect() {
   const datalist = document.getElementById("lfcOpponentOptions");
   if (!input || !datalist) return;
 
-  const teams = [...configState.opponents].sort((a,b) => a.name.localeCompare(b.name));
+  const teams = [...(configState.opponents || [])].sort((a,b) => a.name.localeCompare(b.name));
   datalist.innerHTML = teams
     .map(team => `<option value="${escapeHtml(team.name)}">${escapeHtml(team.code || "")}</option>`)
     .join("");
