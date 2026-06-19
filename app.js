@@ -1581,11 +1581,19 @@ function safeRenderStep(name, fn) {
   }
 }
 
+
+function updateBodyTabTheme() {
+  const activeTab = document.querySelector(".tab.active")?.dataset.tab || "";
+  document.body.classList.toggle("squad-background", activeTab === "squad");
+  document.body.classList.toggle("lfc-background", activeTab === "lfc");
+}
+
 function render() {
   if (!currentProfile) return;
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
   safeRenderStep("setDefaultMatchDates", setDefaultMatchDates);
+  safeRenderStep("updateBodyTabTheme", updateBodyTabTheme);
   safeRenderStep("renderScoreboard", renderScoreboard);
   safeRenderStep("renderOpponentSelect", renderOpponentSelect);
   safeRenderStep("renderMatchList lfc", () => renderMatchList("lfcMatches", "lfc"));
@@ -2086,3 +2094,5 @@ if ("serviceWorker" in navigator) {
 }
 
 boot();
+
+setTimeout(updateBodyTabTheme, 0);

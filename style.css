@@ -1535,3 +1535,115 @@ button.primary:hover,
     min-height: 42px;
   }
 }
+
+
+/* ==========================================================
+   v38 Liverpool background experiment
+   Adds tab/card background images only. No scoring/app logic.
+   ========================================================== */
+
+body {
+  transition: background-image .35s ease, background-color .35s ease;
+}
+
+body.squad-background {
+  background:
+    linear-gradient(180deg, rgba(5, 6, 10, .78), rgba(5, 6, 10, .92)),
+    radial-gradient(circle at 15% 12%, rgba(224, 11, 59, .18), transparent 34%),
+    url("assets/squad-bg.jpg") center center / cover fixed no-repeat !important;
+}
+
+body.squad-background::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,.06), transparent 24%),
+    linear-gradient(90deg, rgba(0,0,0,.45), transparent 40%, rgba(0,0,0,.55));
+}
+
+/* Keep content readable over squad photo */
+body.squad-background .hero,
+body.squad-background .tabs,
+body.squad-background .stat-card,
+body.squad-background .panel {
+  background-color: rgba(8, 9, 13, .76);
+  backdrop-filter: blur(8px);
+}
+
+/* Liverpool Create Match panel background */
+.lfc-create-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, rgba(7, 8, 12, .86), rgba(7, 8, 12, .70)),
+    url("assets/lfc-create-bg.jpg") center 45% / cover no-repeat !important;
+}
+
+.lfc-create-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 20%, rgba(224, 11, 59, .17), transparent 28%),
+    linear-gradient(90deg, rgba(0,0,0,.50), rgba(0,0,0,.18), rgba(0,0,0,.58));
+  z-index: 0;
+}
+
+.lfc-create-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Open Liverpool match-card background */
+.lfc-open-card {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(120deg, rgba(9, 10, 14, .88), rgba(9, 10, 14, .73)),
+    url("assets/lfc-open-match-bg.jpg") center center / cover no-repeat !important;
+}
+
+.lfc-open-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.62), rgba(0,0,0,.30), rgba(0,0,0,.68)),
+    radial-gradient(circle at 20% 10%, rgba(224, 11, 59, .18), transparent 32%);
+  z-index: 0;
+}
+
+.lfc-open-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Give fields on image panels a little more opacity */
+.lfc-create-panel input,
+.lfc-create-panel select,
+.lfc-create-panel textarea,
+.lfc-create-panel .smart-picker-input,
+.lfc-create-panel .smart-picker-trigger,
+.lfc-open-card input,
+.lfc-open-card select,
+.lfc-open-card textarea {
+  background-color: rgba(19, 20, 26, .82);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* Mobile: image backgrounds should scroll smoothly */
+@media(max-width:760px) {
+  body.squad-background {
+    background-attachment: scroll !important;
+  }
+
+  .lfc-create-panel,
+  .lfc-open-card {
+    background-position: center center !important;
+  }
+}
