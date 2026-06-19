@@ -163,8 +163,9 @@ h2{font-size:1.3rem;font-weight:800}
 .tab-panel.active{display:block}
 
 /* ---------- Forms inside panels ---------- */
-.match-form,.manager-form,.other-form{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end}
-.other-form{grid-template-columns:1fr 1fr 170px auto}
+.manager-form{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end}
+.match-form{display:grid;grid-template-columns:2fr auto 1fr auto;gap:12px;align-items:end}
+.other-form{display:grid;grid-template-columns:1fr 1fr 170px auto;gap:12px;align-items:end}
 .inline-add{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:14px}
 .away-toggle,.compact-away-toggle{
   display:flex;align-items:center;justify-content:center;gap:6px;height:46px;padding:0 14px;
