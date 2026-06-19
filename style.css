@@ -275,22 +275,37 @@ h2{font-size:1.3rem;font-weight:800}
 
 /* ---------- Smart picker / combo box ---------- */
 .smart-picker{position:relative}
-.smart-picker-control,.smart-picker-button,.smart-picker-trigger,.combo-toggle{
+.smart-picker-control,.smart-picker-trigger,.combo-toggle{
   width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
   border:1px solid var(--line-strong);background:var(--bg-3);color:var(--text);
-  border-radius:var(--radius-sm);padding:11px 13px;cursor:pointer;
+  border-radius:var(--radius-sm);padding:2px 6px 2px 13px;
 }
-.smart-picker-input,.real-combo{width:100%;border:0;background:transparent;color:var(--text)}
+.smart-picker-control:focus-within{border-color:var(--gold)}
+.smart-picker-input,.real-combo{
+  flex:1;width:100%;border:0;background:transparent;color:var(--text);padding:11px 0;
+}
+.smart-picker-button{
+  background:transparent;border:0;color:var(--text-dim);padding:8px 10px;font-size:.95rem;
+  cursor:pointer;border-radius:8px;
+}
+.smart-picker-button:hover{background:var(--bg-2);filter:none;color:var(--text)}
+
 .smart-picker-dropdown,.smart-picker-menu,.combo-menu{
-  position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:20;
+  display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:20;
   background:var(--bg-2);border:1px solid var(--line-strong);border-radius:var(--radius-sm);
   box-shadow:var(--shadow-card);max-height:260px;overflow:auto;padding:6px;
 }
+.smart-picker-dropdown.open,.smart-picker-menu.open,.combo-menu.open{display:block}
+
 .smart-picker-options{display:grid;gap:2px}
 .smart-picker-option,.combo-option{
-  padding:9px 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  background:transparent;border:0;color:var(--text);
+  padding:9px 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem;text-align:left;
 }
-.smart-picker-option:hover,.combo-option:hover{background:var(--bg-3)}
+.smart-picker-option:hover,.smart-picker-option:focus,
+.combo-option:hover,.combo-option:focus{background:var(--bg-3);filter:none;outline:none}
+.smart-picker-option small{color:var(--text-faint);font-weight:600}
 .smart-picker-empty,.combo-empty{padding:10px;color:var(--text-faint);font-size:.88rem}
 .has-selection .smart-picker-control{border-color:rgba(227,185,79,.4)}
 
@@ -328,6 +343,27 @@ h2{font-size:1.3rem;font-weight:800}
 
 /* ---------- Backgrounds for specific panels (kept subtle, not boxy) ---------- */
 .matchday-image-panel,.lfc-background,.squad-background{position:relative}
+
+.lfc-create-panel,
+.lfc-open-panel .match-card,
+.squad-tab-panel .panel{
+  position:relative;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  isolation:isolate; /* keeps overlay + text above the photo without extra wrapper divs */
+}
+.lfc-create-panel{background-image:url('images/lfc-create-bg.jpg');}
+.lfc-open-panel .match-card{background-image:url('images/lfc-open-match-bg.jpg');}
+.squad-tab-panel .panel{background-image:url('images/squad-bg.jpg');}
+
+.lfc-create-panel::before,
+.lfc-open-panel .match-card::before,
+.squad-tab-panel .panel::before{
+  content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
+  background:linear-gradient(160deg, rgba(10,10,14,.93), rgba(10,10,14,.86) 55%, rgba(10,10,14,.93));
+}
+.lfc-create-panel > *,
+.lfc-open-panel .match-card > *,
+.squad-tab-panel .panel > *{position:relative;z-index:1}
 
 /* ---------- Responsive ---------- */
 @media(max-width:1050px){
