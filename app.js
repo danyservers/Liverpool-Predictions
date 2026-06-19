@@ -20,10 +20,6 @@ import {
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import {
-  getFunctions,
-  httpsCallable
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
 const DEFAULT_PLAYERS = [
   { id: cryptoId(), name: "Mohamed Salah", points: 1 },
@@ -111,7 +107,6 @@ const defaultConfig = () => ({
 let app;
 let auth;
 let db;
-let functions;
 let currentUser = null;
 let currentProfile = null;
 let configState = defaultConfig();
@@ -147,7 +142,7 @@ function setAccountBadge(text) {
 }
 
 function setHeaderLoggedIn(isLoggedIn) {
-  document.querySelectorAll("#accountBadge, #signOutBtn, #backupActions").forEach(el => {
+  document.querySelectorAll("#accountActions, #accountBadge, #signOutBtn, #backupActions").forEach(el => {
     if (el) el.classList.toggle("hidden-control", !isLoggedIn);
   });
 }
@@ -542,18 +537,6 @@ async function revealAndCalculate(matchId, actualData) {
   setCloudStatus("Revealed and calculated", "online");
   render();
   showRoundSummary(matches[localIndex] || { ...updatedMatch, calculated: true, summary }, freshPredictions);
-  setTimeout(() => postToDiscord(matchId, true), 1000);
-}
-
-async function postToDiscord(matchId, silent = false) {
-  try {
-    const callable = httpsCallable(functions, "postMatchSummary");
-    await callable({ matchId });
-    if (!silent) alert("Posted to Discord.");
-  } catch (error) {
-    console.warn(error);
-    if (!silent) alert("Discord posting is not set up yet, or this match was already posted.");
-  }
 }
 
 async function deleteMatch(matchId, ask = true) {
@@ -1296,7 +1279,6 @@ function renderMatchList(containerId, gameType) {
       }
     });
 
-    node.querySelector(".discord-btn").addEventListener("click", () => postToDiscord(match.id));
     node.querySelector(".delete-btn").addEventListener("click", () => deleteMatch(match.id));
 
     container.appendChild(node);
@@ -2061,7 +2043,6 @@ async function boot() {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  functions = getFunctions(app);
 
   onAuthStateChanged(auth, async user => {
     currentUser = user;

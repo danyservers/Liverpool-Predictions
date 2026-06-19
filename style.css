@@ -881,3 +881,245 @@ input[list]::-webkit-calendar-picker-indicator {
   font-size: .92rem !important;
   color: var(--gold) !important;
 }
+
+
+/* v35 page polish - layout only */
+
+/* Header/banner cleanup */
+.hero {
+  align-items: center;
+  gap: 18px;
+}
+
+.club-lockup {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hero-copy {
+  min-width: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4.2vw, 3.35rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  max-width: 620px;
+  line-height: 1.35;
+}
+
+.account-actions {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 330px;
+  align-items: flex-end;
+}
+
+.account-row,
+.backup-row {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.account-badge {
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-actions button,
+.account-actions .import-label,
+.account-badge {
+  min-height: 36px;
+  padding: 8px 11px;
+  font-size: .86rem;
+  border-radius: 12px;
+}
+
+.backup-row {
+  margin-top: 7px;
+}
+
+/* Create-match polish */
+#lfcMatchForm {
+  grid-template-columns: minmax(240px, 2fr) 76px minmax(150px, 1fr) auto;
+  align-items: end;
+}
+
+#otherMatchForm {
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) 160px auto;
+  align-items: end;
+}
+
+.match-form .compact-away-toggle,
+.match-form .away-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  border: 1px solid rgba(212,175,55,.35) !important;
+  background: rgba(212,175,55,.08) !important;
+}
+
+.match-form .compact-away-toggle input,
+.match-form .away-toggle input {
+  flex: 0 0 auto !important;
+}
+
+/* Team manager polish */
+.manager-toggle-row {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+}
+
+.manager-toggle-row .muted {
+  font-weight: 800;
+}
+
+.manager-toggle-row button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.collapsible-content:not(.collapsed) {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(0,0,0,.14);
+}
+
+.inline-add {
+  margin-top: 0;
+}
+
+.manager-search {
+  margin: 12px 0;
+}
+
+.compact-list {
+  gap: 8px;
+}
+
+.compact-item {
+  border-radius: 14px;
+}
+
+/* Mobile polish */
+@media(max-width:900px){
+  .hero {
+    align-items: stretch;
+  }
+
+  .account-actions {
+    max-width: none;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .account-row,
+  .backup-row {
+    justify-content: stretch;
+  }
+
+  .account-row > *,
+  .backup-row > * {
+    flex: 1 1 0;
+  }
+
+  .account-badge {
+    max-width: none;
+    text-align: center;
+  }
+
+  #lfcMatchForm,
+  #otherMatchForm {
+    grid-template-columns: 1fr;
+  }
+
+  .match-form .compact-away-toggle,
+  .match-form .away-toggle {
+    width: fit-content !important;
+    min-width: 76px !important;
+    justify-self: start !important;
+  }
+}
+
+@media(max-width:760px){
+  .app-shell {
+    width: min(100% - 18px, 1200px);
+    padding-top: 10px;
+  }
+
+  .hero {
+    padding: 16px;
+    border-radius: 22px;
+  }
+
+  .club-lockup {
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .crest-img {
+    width: 56px;
+    height: 56px;
+  }
+
+  .panel {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .tabs {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .tab {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .score-row {
+    gap: 8px;
+  }
+
+  .score-row input {
+    min-width: 0;
+  }
+
+  .manager-toggle-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .manager-toggle-row button {
+    width: 100%;
+  }
+
+  .history-actions,
+  .manager-item-actions {
+    width: 100%;
+  }
+
+  .history-actions button,
+  .manager-item-actions button,
+  .manager-item-actions select {
+    width: 100%;
+  }
+}
