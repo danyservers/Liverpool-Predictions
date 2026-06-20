@@ -48,6 +48,8 @@ body{
   background:
     radial-gradient(circle at 12% -10%, rgba(224,23,61,.20), transparent 42%),
     radial-gradient(circle at 100% 0%, rgba(227,185,79,.06), transparent 35%),
+    linear-gradient(rgba(10,10,14,.93), rgba(10,10,14,.97)),
+    url('images/lfc-create-bg.jpg') center top / cover no-repeat fixed,
     var(--bg-0);
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
@@ -139,13 +141,19 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 .panel,
 .auth-panel{
   position:relative;
-  background:var(--bg-1);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-panel);padding:24px 26px;margin-bottom:14px;
+  background:transparent;border-radius:var(--radius-lg);
+  padding:22px 4px 24px;margin-bottom:6px;
+}
+.panel + .panel,
+.auth-panel + .panel{
+  border-top:1px solid transparent;
+  border-image:linear-gradient(90deg,rgba(224,23,61,.35),rgba(200,163,92,.25) 40%,transparent 80%) 1;
+  margin-top:8px;
 }
 .panel::after{
   content:"";position:absolute;bottom:10px;right:10px;width:180px;height:180px;z-index:0;
   background:url('liverpool-logo.svg') center/contain no-repeat;
-  opacity:.035;filter:grayscale(1) brightness(2);pointer-events:none;
+  opacity:.04;filter:grayscale(1) brightness(2);pointer-events:none;
 }
 .panel > *{position:relative;z-index:1}
 /* panels that already carry a real photo (create-match, squad) skip the watermark to avoid double texture */
@@ -354,8 +362,8 @@ h2{font-size:1.3rem;font-weight:800}
 
 /* ---------- Squad / players ---------- */
 .squad-tab-panel .panel{position:relative}
-.lfc-create-panel,.lfc-open-panel,.lfc-open-card,.prediction-card,.card{
-  background:var(--bg-1);border:1px solid var(--line);border-radius:var(--radius-lg);
+.lfc-open-card,.prediction-card,.card{
+  background:var(--bg-1);border-radius:var(--radius-lg);
   box-shadow:var(--shadow-panel);
 }
 .card-header{padding:18px 22px;border-bottom:1px solid var(--line);font-weight:700}
@@ -393,6 +401,7 @@ h2{font-size:1.3rem;font-weight:800}
   position:relative;
   background-size:cover;background-position:center;background-repeat:no-repeat;
   isolation:isolate; /* keeps overlay + text above the photo without extra wrapper divs */
+  padding:24px 26px;box-shadow:var(--shadow-panel);
 }
 .lfc-create-panel{background-image:url('images/lfc-create-bg.jpg');}
 .lfc-open-panel .match-card{background-image:url('images/lfc-open-match-bg.jpg');}
