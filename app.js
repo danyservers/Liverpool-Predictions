@@ -1147,6 +1147,14 @@ function renderMatchList(containerId, gameType) {
     root.dataset.matchId = match.id;
     root.classList.toggle("lfc-open-card", gameType === "lfc");
     root.classList.toggle("other-open-card", gameType === "other");
+    if (gameType === "other") {
+      const hasNorway = /norway/i.test(match.home || "") || /norway/i.test(match.away || "");
+      const hasSpain = /spain/i.test(match.home || "") || /spain/i.test(match.away || "");
+      root.classList.remove("other-bg-norway", "other-bg-spain", "other-bg-norway-spain");
+      if (hasNorway && hasSpain) root.classList.add("other-bg-norway-spain");
+      else if (hasNorway) root.classList.add("other-bg-norway");
+      else if (hasSpain) root.classList.add("other-bg-spain");
+    }
     node.querySelector(".fixture").innerHTML = fixtureHtml(match);
     node.querySelector(".match-meta").textContent = match.date || "No date set";
 
@@ -1293,44 +1301,77 @@ function predictionHtml(pred, match) {
   `;
 }
 
+const TIER_LABELS = { 1: "Main scorers", 2: "Regular scorers", 3: "Occasional scorers", 4: "Rare scorers", 5: "Defenders / very rare", 8: "Keepers / chaos pick" };
+
 function renderPlayers() {
   const list = document.getElementById("playerList");
   list.innerHTML = "";
-  [...configState.players].sort((a,b) => a.name.localeCompare(b.name)).forEach(player => {
-    const item = document.createElement("div");
-    item.className = "manager-item";
-    item.innerHTML = `
-      <div>
-        <strong>${escapeHtml(player.name)}</strong>
-        <div class="muted">Correct scorer gives ${player.points} point${Number(player.points) === 1 ? "" : "s"}</div>
-      </div>
-      <div class="manager-item-actions">
-        <select>
-          <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
-          <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
-        </select>
-        <button type="button" class="ghost rename">Rename</button>
-        <button type="button" class="ghost danger remove">Remove</button>
-      </div>
+  const TIERS = [1,2,3,4,5,8];
+  const grouped = TIERS.map(t => ({
+    tier: t,
+    players: configState.players.filter(p => Number(p.points) === t).sort((a,b) => a.name.localeCompare(b.name))
+  })).filter(g => g.players.length);
+
+  if (!grouped.length) {
+    list.innerHTML = `<div class="empty">No players yet. Add your first player above.</div>`;
+    return;
+  }
+
+  grouped.forEach(group => {
+    const groupEl = document.createElement("div");
+    groupEl.className = "tier-group";
+    groupEl.innerHTML = `
+      <button type="button" class="tier-group-toggle">
+        <span class="tier-group-label">
+          Tier ${group.tier} · ${group.tier} pt${group.tier === 1 ? "" : "s"}
+          <span class="tier-group-sub">${TIER_LABELS[group.tier] || ""}</span>
+        </span>
+        <span class="tier-group-meta">
+          <span class="tier-group-count">${group.players.length}</span>
+          <span class="history-toggle-icon">▾</span>
+        </span>
+      </button>
+      <div class="tier-group-body collapsed"></div>
     `;
-    const select = item.querySelector("select");
-    select.value = String(player.points);
-    select.addEventListener("change", async e => {
-      player.points = Number(e.target.value);
-      await saveConfig({ players: configState.players });
+    const body = groupEl.querySelector(".tier-group-body");
+    group.players.forEach(player => {
+      const chip = document.createElement("div");
+      chip.className = "player-chip";
+      chip.innerHTML = `
+        <span class="player-chip-name">${escapeHtml(player.name)}</span>
+        <span class="player-chip-actions">
+          <select>
+            <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
+            <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
+          </select>
+          <button type="button" class="ghost rename" title="Rename">✎</button>
+          <button type="button" class="ghost danger remove" title="Remove">✕</button>
+        </span>
+      `;
+      const select = chip.querySelector("select");
+      select.value = String(player.points);
+      select.addEventListener("change", async e => {
+        player.points = Number(e.target.value);
+        await saveConfig({ players: configState.players });
+      });
+      chip.querySelector(".rename").addEventListener("click", async () => {
+        const next = prompt("Player name:", player.name);
+        if (!next) return;
+        player.name = normaliseName(next);
+        await saveConfig({ players: configState.players });
+      });
+      chip.querySelector(".remove").addEventListener("click", async () => {
+        if (!confirm(`Remove ${player.name}?`)) return;
+        configState.players = configState.players.filter(p => p.id !== player.id);
+        await saveConfig({ players: configState.players });
+      });
+      body.appendChild(chip);
     });
-    item.querySelector(".rename").addEventListener("click", async () => {
-      const next = prompt("Player name:", player.name);
-      if (!next) return;
-      player.name = normaliseName(next);
-      await saveConfig({ players: configState.players });
+    groupEl.querySelector(".tier-group-toggle").addEventListener("click", () => {
+      groupEl.classList.toggle("expanded");
+      body.classList.toggle("collapsed");
     });
-    item.querySelector(".remove").addEventListener("click", async () => {
-      if (!confirm(`Remove ${player.name}?`)) return;
-      configState.players = configState.players.filter(p => p.id !== player.id);
-      await saveConfig({ players: configState.players });
-    });
-    list.appendChild(item);
+    list.appendChild(groupEl);
   });
 }
 
@@ -1539,19 +1580,31 @@ function renderHistory() {
   completed.forEach(match => {
     const item = document.createElement("div");
     item.className = "history-item";
+    const r = displayResultForMatch(match);
     item.innerHTML = `
-      <div class="history-main">
-        <strong>${escapeHtml(displayResultForMatch(match).home)} ${escapeHtml(displayResultForMatch(match).homeScore)}-${escapeHtml(displayResultForMatch(match).awayScore)} ${escapeHtml(displayResultForMatch(match).away)}</strong>
-        <div class="muted">${escapeHtml(match.seasonId)} • ${match.gameType === "lfc" ? "Liverpool" : "Other"} • Round winner: ${escapeHtml(match.summary?.roundWinner || "-")}</div>
-        ${summaryCardHtml(match)}
-      </div>
-      <div class="history-actions">
-        <span class="pill">Dany ${match.summary?.danyPoints || 0}</span>
-        <span class="pill">Isa ${match.summary?.isaPoints || 0}</span>
-        <button type="button" class="ghost danger delete-history">Delete</button>
+      <button type="button" class="history-summary-toggle">
+        <span class="history-summary-text">
+          <strong>${escapeHtml(r.home)} ${escapeHtml(r.homeScore)}-${escapeHtml(r.awayScore)} ${escapeHtml(r.away)}</strong>
+          <span class="muted">${escapeHtml(match.seasonId)} • ${match.gameType === "lfc" ? "Liverpool" : "Other"} • Round winner: ${escapeHtml(match.summary?.roundWinner || "-")}</span>
+        </span>
+        <span class="history-summary-pills">
+          <span class="pill">Dany ${match.summary?.danyPoints || 0}</span>
+          <span class="pill">Isa ${match.summary?.isaPoints || 0}</span>
+          <span class="history-toggle-icon">▾</span>
+        </span>
+      </button>
+      <div class="history-details collapsed">
+        <div class="history-main">${summaryCardHtml(match)}</div>
+        <div class="history-actions">
+          <button type="button" class="ghost danger delete-history">Delete</button>
+        </div>
       </div>
     `;
     item.querySelector(".delete-history").addEventListener("click", () => deleteHistoryMatch(match.id));
+    item.querySelector(".history-summary-toggle").addEventListener("click", () => {
+      item.classList.toggle("expanded");
+      item.querySelector(".history-details").classList.toggle("collapsed");
+    });
     history.appendChild(item);
   });
 }

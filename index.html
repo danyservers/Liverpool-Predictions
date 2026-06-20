@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=52" />
+  <link rel="stylesheet" href="style.css?v=53" />
 </head>
 <body>
   <div class="app-shell">
@@ -114,11 +114,12 @@
           <div class="section-title">
             <div>
               <p class="eyebrow">Open Liverpool matches</p>
-              <h2>Prediction events</h2>
+              <h2>Prediction events
+                <span class="help-tip" tabindex="0">?
+                  <span class="help-tip-text">You only enter and see your own prediction before reveal. The other prediction stays face down.</span>
+                </span>
+              </h2>
             </div>
-          </div>
-          <div class="notice">
-            You only enter and see your own prediction before reveal. The other prediction stays face down.
           </div>
           <div id="lfcMatches" class="match-list"></div>
         </section>
@@ -150,7 +151,10 @@
           </form>
           <div class="manager-toggle-row">
             <span id="otherTeamCount" class="muted">Teams saved</span>
-            <button type="button" class="ghost" id="toggleOtherTeamsBtn">Manage teams</button>
+            <div class="manager-toggle-buttons">
+              <button type="button" class="ghost" id="toggleOtherTeamsBtn">Manage teams</button>
+              <button type="button" class="ghost" id="toggleOtherPlayersBtn">Manage players</button>
+            </div>
           </div>
           <div id="otherTeamsManager" class="collapsible-content collapsed">
             <div class="inline-add">
@@ -160,16 +164,6 @@
             </div>
             <input id="otherTeamSearchInput" class="manager-search" placeholder="Search saved teams" />
             <div id="otherTeamList" class="manager-list compact-list"></div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="section-title">
-            <div>
-              <p class="eyebrow">Other matches players</p>
-              <h2>Player scoring tiers</h2>
-            </div>
-            <button type="button" class="ghost" id="toggleOtherPlayersBtn">Open player tiers</button>
           </div>
           <div id="otherPlayersManager" class="collapsible-content collapsed">
             <form id="otherPlayerForm" class="manager-form">
