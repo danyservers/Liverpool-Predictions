@@ -4,11 +4,15 @@
    used deliberately, soft depth instead of stacked borders.
    ========================================================= */
 
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&display=swap');
+
 :root{
   /* Core palette — Liverpool red, used sparingly as the single accent */
   --red:#e0173d;
   --red-deep:#9c0f29;
-  --gold:#e3b94f;
+  --gold:#c8a35c;        /* tuned to match the crest gold rather than a generic gold */
+  --gold-bright:#e6c483;
+  --font-display:'Saira Condensed',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 
   /* Surfaces — three levels of depth, no nested borders needed */
   --bg-0:#0a0a0e;          /* page base */
@@ -49,7 +53,11 @@ body{
 
 ::selection{background:rgba(224,23,61,.35)}
 
-h1,h2,h3{margin:0;letter-spacing:-.01em}
+h1,h2,h3{margin:0;letter-spacing:-.01em;font-family:var(--font-display);font-weight:800;text-transform:uppercase}
+.eyebrow,.section-kicker{font-family:var(--font-display);letter-spacing:.16em}
+.tab{font-family:var(--font-display);text-transform:uppercase;letter-spacing:.03em;font-size:1rem}
+.score-card strong,.stat-value{font-family:var(--font-display)}
+.versus{font-family:var(--font-display);text-transform:uppercase}
 p{line-height:1.5}
 
 /* ---------- Buttons & form controls ---------- */
@@ -89,11 +97,18 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 
 /* ---------- Hero ---------- */
 .hero{
+  position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 28px;
   border:1px solid var(--line);border-radius:var(--radius-lg);
   background:linear-gradient(135deg, rgba(224,23,61,.10), var(--bg-1) 60%);
   box-shadow:var(--shadow-panel);margin-bottom:20px;
 }
+.hero::before{
+  content:"";position:absolute;top:-30%;right:-8%;width:340px;height:340px;z-index:0;
+  background:url('liverpool-logo.svg') center/contain no-repeat;
+  opacity:.07;filter:grayscale(1) brightness(2);pointer-events:none;
+}
+.hero > *{position:relative;z-index:1}
 .club-lockup{display:flex;align-items:center;gap:18px}
 .crest,.lfc-badge{
   width:56px;height:56px;display:grid;place-items:center;border-radius:50%;
@@ -121,11 +136,25 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 /* Outer container — one consistent panel style, no double borders */
 .panel,
 .auth-panel{
+  position:relative;overflow:hidden;
   background:var(--bg-1);border-radius:var(--radius-lg);
   box-shadow:var(--shadow-panel);padding:24px 26px;margin-bottom:20px;
 }
+.panel::after{
+  content:"";position:absolute;bottom:-12%;right:-6%;width:220px;height:220px;z-index:0;
+  background:url('liverpool-logo.svg') center/contain no-repeat;
+  opacity:.035;filter:grayscale(1) brightness(2);pointer-events:none;
+}
+.panel > *{position:relative;z-index:1}
+/* panels that already carry a real photo (create-match, squad) skip the watermark to avoid double texture */
+.lfc-create-panel::after,
+.squad-tab-panel .panel::after{display:none}
 
-.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;
+  border-bottom:2px solid transparent;
+  border-image:linear-gradient(90deg,var(--red),var(--gold) 35%,transparent 75%) 1;
+  padding-bottom:14px;
+}
 .section-kicker{color:var(--gold);text-transform:uppercase;letter-spacing:.12em;font-size:.7rem;font-weight:700}
 h2{font-size:1.3rem;font-weight:800}
 
@@ -139,8 +168,13 @@ h2{font-size:1.3rem;font-weight:800}
 .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .mini-score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .score-card,.stat-card{
+  position:relative;overflow:hidden;
   background:var(--bg-1);border-radius:var(--radius-md);
-  padding:18px 20px;box-shadow:var(--shadow-card);
+  padding:20px 20px 18px;box-shadow:var(--shadow-card);
+}
+.score-card::before,.stat-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red),var(--gold));
 }
 .score-card span,.stat-label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:4px;font-weight:600}
 .score-card strong,.stat-value{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
@@ -251,6 +285,13 @@ h2{font-size:1.3rem;font-weight:800}
   backface-visibility:hidden;
 }
 .flip-back{transform:rotateY(180deg)}
+.flip-card.revealed .flip-back{position:relative;overflow:hidden}
+.flip-card.revealed .flip-back::after{
+  content:"";position:absolute;top:0;left:-150%;width:60%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(230,196,131,.35),transparent);
+  animation:shine-sweep .9s .55s ease-out forwards;
+}
+@keyframes shine-sweep{to{left:150%}}
 .flip-front{align-items:center;text-align:center}
 .face-down{
   margin:16px 0;padding:22px;border-radius:var(--radius-md);background:var(--bg-2);
