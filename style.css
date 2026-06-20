@@ -543,7 +543,7 @@ h2{font-size:1.3rem;font-weight:800}
 .other-create-panel{background-image:url('images/other-matches-bg.jpg');}
 .season-panel{
   background-image:url('images/trophies-cutout.jpg');
-  background-size:contain;background-position:center;background-color:#0a0a0e;
+  background-size:cover;background-position:center bottom;background-color:#0a0a0e;
 }
 .history-panel{background-image:url('images/history-bg.jpg');}
 .other-bg-norway{background-image:url('images/team-norway.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;}
@@ -561,6 +561,11 @@ h2{font-size:1.3rem;font-weight:800}
 .other-bg-norway-spain::before{
   content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;
   background:linear-gradient(160deg, rgba(10,10,14,.78), rgba(10,10,14,.62) 55%, rgba(10,10,14,.80));
+}
+/* season panel's photo is already mostly black, so it needs much less darkening
+   or the trophies disappear entirely */
+.season-panel::before{
+  background:linear-gradient(160deg, rgba(10,10,14,.25), rgba(10,10,14,.15) 50%, rgba(10,10,14,.5));
 }
 .lfc-create-panel > *,
 .lfc-open-panel .match-card > *,
