@@ -1301,77 +1301,48 @@ function predictionHtml(pred, match) {
   `;
 }
 
-const TIER_LABELS = { 1: "Main scorers", 2: "Regular scorers", 3: "Occasional scorers", 4: "Rare scorers", 5: "Defenders / very rare", 8: "Keepers / chaos pick" };
-
 function renderPlayers() {
   const list = document.getElementById("playerList");
   list.innerHTML = "";
-  const TIERS = [1,2,3,4,5,8];
-  const grouped = TIERS.map(t => ({
-    tier: t,
-    players: configState.players.filter(p => Number(p.points) === t).sort((a,b) => a.name.localeCompare(b.name))
-  })).filter(g => g.players.length);
+  const sorted = [...configState.players].sort((a,b) => a.name.localeCompare(b.name));
 
-  if (!grouped.length) {
+  if (!sorted.length) {
     list.innerHTML = `<div class="empty">No players yet. Add your first player above.</div>`;
     return;
   }
 
-  grouped.forEach(group => {
-    const groupEl = document.createElement("div");
-    groupEl.className = "tier-group";
-    groupEl.innerHTML = `
-      <button type="button" class="tier-group-toggle">
-        <span class="tier-group-label">
-          Tier ${group.tier} · ${group.tier} pt${group.tier === 1 ? "" : "s"}
-          <span class="tier-group-sub">${TIER_LABELS[group.tier] || ""}</span>
-        </span>
-        <span class="tier-group-meta">
-          <span class="tier-group-count">${group.players.length}</span>
-          <span class="history-toggle-icon">▾</span>
-        </span>
-      </button>
-      <div class="tier-group-body collapsed"></div>
+  sorted.forEach(player => {
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `
+      <span class="player-row-name">${escapeHtml(player.name)}</span>
+      <span class="player-row-actions">
+        <select>
+          <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
+          <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
+        </select>
+        <button type="button" class="ghost rename" title="Rename">✎</button>
+        <button type="button" class="ghost danger remove" title="Remove">✕</button>
+      </span>
     `;
-    const body = groupEl.querySelector(".tier-group-body");
-    group.players.forEach(player => {
-      const chip = document.createElement("div");
-      chip.className = "player-chip";
-      chip.innerHTML = `
-        <span class="player-chip-name">${escapeHtml(player.name)}</span>
-        <span class="player-chip-actions">
-          <select>
-            <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
-            <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
-          </select>
-          <button type="button" class="ghost rename" title="Rename">✎</button>
-          <button type="button" class="ghost danger remove" title="Remove">✕</button>
-        </span>
-      `;
-      const select = chip.querySelector("select");
-      select.value = String(player.points);
-      select.addEventListener("change", async e => {
-        player.points = Number(e.target.value);
-        await saveConfig({ players: configState.players });
-      });
-      chip.querySelector(".rename").addEventListener("click", async () => {
-        const next = prompt("Player name:", player.name);
-        if (!next) return;
-        player.name = normaliseName(next);
-        await saveConfig({ players: configState.players });
-      });
-      chip.querySelector(".remove").addEventListener("click", async () => {
-        if (!confirm(`Remove ${player.name}?`)) return;
-        configState.players = configState.players.filter(p => p.id !== player.id);
-        await saveConfig({ players: configState.players });
-      });
-      body.appendChild(chip);
+    const select = row.querySelector("select");
+    select.value = String(player.points);
+    select.addEventListener("change", async e => {
+      player.points = Number(e.target.value);
+      await saveConfig({ players: configState.players });
     });
-    groupEl.querySelector(".tier-group-toggle").addEventListener("click", () => {
-      groupEl.classList.toggle("expanded");
-      body.classList.toggle("collapsed");
+    row.querySelector(".rename").addEventListener("click", async () => {
+      const next = prompt("Player name:", player.name);
+      if (!next) return;
+      player.name = normaliseName(next);
+      await saveConfig({ players: configState.players });
     });
-    list.appendChild(groupEl);
+    row.querySelector(".remove").addEventListener("click", async () => {
+      if (!confirm(`Remove ${player.name}?`)) return;
+      configState.players = configState.players.filter(p => p.id !== player.id);
+      await saveConfig({ players: configState.players });
+    });
+    list.appendChild(row);
   });
 }
 

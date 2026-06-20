@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=53" />
+  <link rel="stylesheet" href="style.css?v=54" />
 </head>
 <body>
   <div class="app-shell">
@@ -84,9 +84,12 @@
               <label>Opponent</label>
               <div class="smart-picker" id="lfcOpponentPicker" data-placeholder="Search or choose opponent"></div>
             </div>
-            <label class="away-toggle compact-away-toggle" title="Away match">
+            <label class="away-toggle compact-away-toggle" title="Home or away match">
               <input id="lfcAwayInput" type="checkbox" />
-              <span>(A)</span>
+              <span class="ha-toggle">
+                <span class="ha-option ha-home">H</span>
+                <span class="ha-option ha-away">A</span>
+              </span>
             </label>
             <div>
               <label>Match date</label>
