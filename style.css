@@ -49,7 +49,7 @@ body{
     radial-gradient(circle at 12% -10%, rgba(224,23,61,.20), transparent 42%),
     radial-gradient(circle at 100% 0%, rgba(227,185,79,.06), transparent 35%),
     linear-gradient(rgba(10,10,14,.93), rgba(10,10,14,.97)),
-    url('images/lfc-create-bg.jpg') center top / cover no-repeat fixed,
+    url('images/page-bg-crowd.jpg') center top / cover no-repeat fixed,
     var(--bg-0);
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
@@ -104,8 +104,8 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
   position:relative;overflow:hidden;
   display:flex;align-items:center;justify-content:space-between;gap:18px;padding:32px 28px;
   border-radius:var(--radius-lg);
-  background-image:url('images/lfc-open-match-bg.jpg');
-  background-size:cover;background-position:center 35%;
+  background-image:url('images/hero-trophies.jpg');
+  background-size:cover;background-position:center 55%;
   box-shadow:var(--shadow-panel);margin-bottom:16px;
 }
 .hero::before{
@@ -410,7 +410,6 @@ h2{font-size:1.3rem;font-weight:800}
 .squad-tab-panel .panel{
   position:relative;
   background-size:cover;background-position:center;background-repeat:no-repeat;
-  isolation:isolate; /* keeps overlay + text above the photo without extra wrapper divs */
   padding:24px 26px;box-shadow:var(--shadow-panel);
 }
 .lfc-create-panel{background-image:url('images/lfc-create-bg.jpg');}
