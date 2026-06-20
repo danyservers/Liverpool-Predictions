@@ -541,7 +541,10 @@ h2{font-size:1.3rem;font-weight:800}
 .lfc-open-panel .match-card{background-image:url('images/lfc-open-match-bg.jpg');}
 .squad-tab-panel .panel{background-image:url('images/squad-bg.jpg');}
 .other-create-panel{background-image:url('images/other-matches-bg.jpg');}
-.season-panel{background-image:url('images/hero-trophies.jpg');}
+.season-panel{
+  background-image:url('images/trophies-cutout.jpg');
+  background-size:contain;background-position:center;background-color:#0a0a0e;
+}
 .history-panel{background-image:url('images/history-bg.jpg');}
 .other-bg-norway{background-image:url('images/team-norway.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;}
 .other-bg-spain{background-image:url('images/team-spain.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;}
