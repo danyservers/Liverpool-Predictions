@@ -2075,7 +2075,7 @@ async function boot() {
 
     showApp(true);
     setHeaderLoggedIn(true);
-    setAccountBadge(`Logged in as ${currentProfile.name}`);
+    setAccountBadge(currentProfile.name);
     setCloudStatus("Live cloud sync", "online");
     await initialiseCloud();
   });
