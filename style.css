@@ -102,17 +102,26 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 /* ---------- Hero ---------- */
 .hero{
   position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 28px;
-  border:1px solid var(--line);border-radius:var(--radius-lg);
-  background:linear-gradient(135deg, rgba(224,23,61,.10), var(--bg-1) 60%);
+  display:flex;align-items:center;justify-content:space-between;gap:18px;padding:32px 28px;
+  border-radius:var(--radius-lg);
+  background-image:url('images/lfc-open-match-bg.jpg');
+  background-size:cover;background-position:center 35%;
   box-shadow:var(--shadow-panel);margin-bottom:16px;
 }
 .hero::before{
-  content:"";position:absolute;top:-30%;right:-8%;width:340px;height:340px;z-index:0;
+  content:"";position:absolute;inset:0;z-index:0;
+  background:
+    linear-gradient(100deg, rgba(8,8,11,.93) 0%, rgba(8,8,11,.74) 45%, rgba(8,8,11,.55) 100%),
+    linear-gradient(0deg, rgba(8,8,11,.55), transparent 55%);
+}
+.hero::after{
+  content:"";position:absolute;top:-25%;right:-6%;width:300px;height:300px;z-index:0;
   background:url('liverpool-logo.svg') center/contain no-repeat;
-  opacity:.07;filter:grayscale(1) brightness(2);pointer-events:none;
+  opacity:.08;filter:grayscale(1) brightness(2);pointer-events:none;
 }
 .hero > *{position:relative;z-index:1}
+.hero::before,.hero::after{pointer-events:none}
+.hero{border-bottom:3px solid transparent;border-image:linear-gradient(90deg,var(--red),var(--gold) 50%,var(--red)) 1}
 .club-lockup{display:flex;align-items:center;gap:18px}
 .crest,.lfc-badge{
   width:56px;height:56px;display:grid;place-items:center;border-radius:50%;
@@ -236,7 +245,8 @@ h2{font-size:1.3rem;font-weight:800}
 .history-item,.history-card,
 .compact-item{
   display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;
-  background:var(--bg-2);border-radius:var(--radius-sm);
+  background:rgba(20,20,26,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.06);
 }
 .manager-item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .manager-item-actions select{min-width:110px}
@@ -416,6 +426,11 @@ h2{font-size:1.3rem;font-weight:800}
 .lfc-create-panel > *,
 .lfc-open-panel .match-card > *,
 .squad-tab-panel .panel > *{position:relative;z-index:1}
+/* forms need to sit above their later siblings (e.g. "Manage opponents" row)
+   so an open search dropdown isn't painted over by content below it */
+.lfc-create-panel > form,
+.lfc-open-panel .match-card > form,
+.squad-tab-panel .panel > form{z-index:5}
 
 /* ---------- Responsive ---------- */
 @media(max-width:1050px){
