@@ -306,6 +306,26 @@ h2{font-size:1.3rem;font-weight:800}
 .manager-item-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .manager-item-actions select{min-width:110px}
 
+.season-item{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  background:rgba(20,20,26,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.08);
+}
+.season-item-icon{font-size:1.6rem;line-height:1;flex:0 0 auto}
+.season-item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.season-item-main strong{font-size:1.05rem}
+.season-item-stats{display:flex;gap:8px;flex-wrap:wrap}
+.season-item-stats .pill{font-size:.78rem;background:rgba(255,255,255,.05)}
+.season-item-active{
+  border-color:rgba(200,163,92,.45);
+  box-shadow:0 0 0 1px rgba(200,163,92,.25), 0 10px 26px -16px rgba(0,0,0,.6);
+  background:linear-gradient(135deg, rgba(200,163,92,.08), rgba(20,20,26,.5));
+}
+.season-active-badge{
+  padding:7px 14px;border-radius:999px;font-weight:700;font-size:.8rem;
+  background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:#1a1305;
+}
+
 /* History — compact one-line summary, expands on click */
 .history-item{
   background:rgba(18,18,24,.22);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
@@ -521,7 +541,7 @@ h2{font-size:1.3rem;font-weight:800}
 .lfc-open-panel .match-card{background-image:url('images/lfc-open-match-bg.jpg');}
 .squad-tab-panel .panel{background-image:url('images/squad-bg.jpg');}
 .other-create-panel{background-image:url('images/other-matches-bg.jpg');}
-.season-panel{background-image:url('images/season-bg.jpg');}
+.season-panel{background-image:url('images/hero-trophies.jpg');}
 .history-panel{background-image:url('images/history-bg.jpg');}
 .other-bg-norway{background-image:url('images/team-norway.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;}
 .other-bg-spain{background-image:url('images/team-spain.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;}

@@ -1395,15 +1395,20 @@ function renderSeasons() {
   configState.seasons.forEach(season => {
     const lfc = totals("lfc", season.id);
     const other = totals("other", season.id);
+    const isActive = season.id === configState.activeSeasonId;
     const item = document.createElement("div");
-    item.className = "season-item";
+    item.className = "season-item" + (isActive ? " season-item-active" : "");
     item.innerHTML = `
-      <div>
+      <div class="season-item-icon">${isActive ? "🏆" : "📅"}</div>
+      <div class="season-item-main">
         <strong>${escapeHtml(season.name)}</strong>
-        <div class="muted">LFC: Dany ${lfc.dany} - Isa ${lfc.isa} • Other: Dany ${other.dany} - Isa ${other.isa}</div>
+        <div class="season-item-stats">
+          <span class="pill">LFC · Dany ${lfc.dany} - ${lfc.isa} Isa</span>
+          <span class="pill">Other · Dany ${other.dany} - ${other.isa} Isa</span>
+        </div>
       </div>
       <div class="manager-item-actions">
-        ${season.id === configState.activeSeasonId ? '<span class="pill">Active</span>' : '<button type="button" class="ghost activate">Set active</button>'}
+        ${isActive ? '<span class="season-active-badge">Active</span>' : '<button type="button" class="ghost activate">Set active</button>'}
         <button type="button" class="ghost danger delete-season">Delete</button>
       </div>
     `;
