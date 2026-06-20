@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Replace these placeholders with Firebase Authentication UIDs:
+    // Firebase Console → Authentication → Users → click user → copy User UID.
+    function isDany() {
+      return signedIn() && request.auth.uid == "ZW3ol5Ldb9QZmj6yoaqsJRPrJzq1";
+    }
+
+    function isIsa() {
+      return signedIn() && request.auth.uid == "uST7bYIkuVZR3L5quFBcpEyE7XH3";
+    }
+
+    function isAllowed() {
+      return isDany() || isIsa();
+    }
+
+    function userKey() {
+      return isDany()
+        ? "dany"
+        : isIsa()
+          ? "isa"
+          : "none";
+    }
+
+    match /config/current {
+      allow read, write: if isAllowed();
+    }
+
+    match /matches/{matchId} {
+      allow read, create, update, delete: if isAllowed();
+
+      match /predictions/{predictionId} {
+        allow read: if isAllowed()
+          && (
+            predictionId == userKey()
+            || get(/databases/$(database)/documents/matches/$(matchId)).data.revealed == true
+          );
+
+        // Normal app UI still only edits your own prediction.
+        // Broader write permissions are needed so Import Backup can restore
+        // both Dany and Isa prediction documents from a trusted backup file.
+        allow create, update, delete: if isAllowed()
+          && predictionId in ["dany", "isa"];
+      }
+    }
+  }
+}
