@@ -14,25 +14,27 @@
   --gold-bright:#e6c483;
   --font-display:'Saira Condensed',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
 
-  /* Surfaces — three levels of depth, no nested borders needed */
+  /* Surfaces — subtle depth, kept close in tone so sections read as one flowing
+     page rather than separate floating boxes; separation comes from spacing +
+     a soft lift, not hard contrast */
   --bg-0:#0a0a0e;          /* page base */
-  --bg-1:#13131a;          /* raised surface (panels) */
-  --bg-2:#1b1b24;          /* raised-on-raised (cards inside panels) */
-  --bg-3:#23232f;          /* innermost surface (inputs, pills) */
+  --bg-1:#0f0f14;          /* raised surface (panels) — close to page tone */
+  --bg-2:#15151c;          /* raised-on-raised (cards inside panels) */
+  --bg-3:#1c1c25;          /* innermost surface (inputs, pills) */
 
   --text:#f5f4f8;
   --text-dim:#9d9caa;
   --text-faint:#6b6a78;
 
-  --line:rgba(255,255,255,.07);
-  --line-strong:rgba(255,255,255,.14);
+  --line:rgba(255,255,255,.06);
+  --line-strong:rgba(255,255,255,.13);
 
-  --radius-lg:20px;
+  --radius-lg:18px;
   --radius-md:14px;
   --radius-sm:10px;
 
-  --shadow-panel:0 24px 48px -16px rgba(0,0,0,.55);
-  --shadow-card:0 12px 28px -12px rgba(0,0,0,.5);
+  --shadow-panel:0 10px 26px -18px rgba(0,0,0,.5);
+  --shadow-card:0 6px 16px -10px rgba(0,0,0,.4);
 
   --ease:cubic-bezier(.2,.7,.2,1);
 }
@@ -101,7 +103,7 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
   display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 28px;
   border:1px solid var(--line);border-radius:var(--radius-lg);
   background:linear-gradient(135deg, rgba(224,23,61,.10), var(--bg-1) 60%);
-  box-shadow:var(--shadow-panel);margin-bottom:20px;
+  box-shadow:var(--shadow-panel);margin-bottom:16px;
 }
 .hero::before{
   content:"";position:absolute;top:-30%;right:-8%;width:340px;height:340px;z-index:0;
@@ -136,12 +138,12 @@ label{display:block;color:var(--text-dim);font-size:.82rem;margin-bottom:6px;fon
 /* Outer container — one consistent panel style, no double borders */
 .panel,
 .auth-panel{
-  position:relative;overflow:hidden;
+  position:relative;
   background:var(--bg-1);border-radius:var(--radius-lg);
-  box-shadow:var(--shadow-panel);padding:24px 26px;margin-bottom:20px;
+  box-shadow:var(--shadow-panel);padding:24px 26px;margin-bottom:14px;
 }
 .panel::after{
-  content:"";position:absolute;bottom:-12%;right:-6%;width:220px;height:220px;z-index:0;
+  content:"";position:absolute;bottom:10px;right:10px;width:180px;height:180px;z-index:0;
   background:url('liverpool-logo.svg') center/contain no-repeat;
   opacity:.035;filter:grayscale(1) brightness(2);pointer-events:none;
 }
@@ -165,7 +167,7 @@ h2{font-size:1.3rem;font-weight:800}
 .cloud-status.offline{color:#ff8a8a;border-color:rgba(255,138,138,.3)}
 
 /* ---------- Scoreboard ---------- */
-.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .mini-score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .score-card,.stat-card{
   position:relative;overflow:hidden;
@@ -183,7 +185,7 @@ h2{font-size:1.3rem;font-weight:800}
 
 /* ---------- Tabs ---------- */
 .tabs{
-  display:flex;gap:6px;padding:6px;margin-bottom:20px;overflow:auto;
+  display:flex;gap:6px;padding:6px;margin-bottom:16px;overflow:auto;
   background:var(--bg-1);border-radius:999px;box-shadow:var(--shadow-card);
 }
 .tab{
