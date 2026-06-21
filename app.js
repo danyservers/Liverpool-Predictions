@@ -48,24 +48,60 @@ const DEFAULT_PLAYERS = [
 ];
 
 const DEFAULT_OTHER_PLAYERS = [
-  { id: cryptoId(), name: "Erling Haaland", points: 1 },
-  { id: cryptoId(), name: "Alexander Sørloth", points: 1 },
-  { id: cryptoId(), name: "Martin Ødegaard", points: 2 },
-  { id: cryptoId(), name: "Antonio Nusa", points: 2 },
-  { id: cryptoId(), name: "Oscar Bobb", points: 2 },
-  { id: cryptoId(), name: "Sander Berge", points: 4 },
-  { id: cryptoId(), name: "Leo Østigård", points: 5 },
-  { id: cryptoId(), name: "David Raya", points: 8 },
-  { id: cryptoId(), name: "Álvaro Morata", points: 1 },
-  { id: cryptoId(), name: "Lamine Yamal", points: 1 },
-  { id: cryptoId(), name: "Nico Williams", points: 2 },
-  { id: cryptoId(), name: "Dani Olmo", points: 2 },
-  { id: cryptoId(), name: "Pedri", points: 3 },
-  { id: cryptoId(), name: "Fabián Ruiz", points: 3 },
-  { id: cryptoId(), name: "Rodri", points: 4 },
-  { id: cryptoId(), name: "Dani Carvajal", points: 5 },
-  { id: cryptoId(), name: "Aymeric Laporte", points: 5 },
-  { id: cryptoId(), name: "Unai Simón", points: 8 }
+  // Norway
+  { id: cryptoId(), name: "Ørjan Håskjold Nyland", points: 8, country: "Norway" },
+  { id: cryptoId(), name: "Morten Thorsby", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Kristoffer Ajer", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Leo Skiri Østigård", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "David Møller Wolfe", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Patrick Berg", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Alexander Sørloth", points: 1, country: "Norway" },
+  { id: cryptoId(), name: "Sander Berge", points: 4, country: "Norway" },
+  { id: cryptoId(), name: "Erling Braut Haaland", points: 1, country: "Norway" },
+  { id: cryptoId(), name: "Martin Ødegaard", points: 2, country: "Norway" },
+  { id: cryptoId(), name: "Jørgen Strand Larsen", points: 2, country: "Norway" },
+  { id: cryptoId(), name: "Sander Tangvik", points: 8, country: "Norway" },
+  { id: cryptoId(), name: "Egil Selvik", points: 8, country: "Norway" },
+  { id: cryptoId(), name: "Fredrik Aursnes", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Fredrik André Bjørkan", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Marcus Holmgren Pedersen", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Torbjørn Lysaker Heggem", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Kristian Thorstvedt", points: 2, country: "Norway" },
+  { id: cryptoId(), name: "Thelonious Aasgaard", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Antonio Nusa", points: 2, country: "Norway" },
+  { id: cryptoId(), name: "Andreas Schjelderup", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Oscar Bobb", points: 2, country: "Norway" },
+  { id: cryptoId(), name: "Jens Petter Hauge", points: 3, country: "Norway" },
+  { id: cryptoId(), name: "Sondre Klingen Langås", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Henrik Sælebakke Falchener", points: 5, country: "Norway" },
+  { id: cryptoId(), name: "Julian Ryerson", points: 5, country: "Norway" },
+  // Spain
+  { id: cryptoId(), name: "David Raya", points: 8, country: "Spain" },
+  { id: cryptoId(), name: "Joan García", points: 8, country: "Spain" },
+  { id: cryptoId(), name: "Unai Simón", points: 8, country: "Spain" },
+  { id: cryptoId(), name: "Marc Pubill", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Alejandro Grimaldo", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Eric García", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Pedro Porro", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Aymeric Laporte", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Pau Cubarsí", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Marc Cucurella", points: 5, country: "Spain" },
+  { id: cryptoId(), name: "Marcos Llorente", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Mikel Merino", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Fabián Ruiz", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Gavi", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Dani Olmo", points: 2, country: "Spain" },
+  { id: cryptoId(), name: "Yéremy Pino", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Álex Baena", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Rodri", points: 4, country: "Spain" },
+  { id: cryptoId(), name: "Martín Zubimendi", points: 4, country: "Spain" },
+  { id: cryptoId(), name: "Pedri", points: 3, country: "Spain" },
+  { id: cryptoId(), name: "Ferran Torres", points: 1, country: "Spain" },
+  { id: cryptoId(), name: "Nico Williams", points: 2, country: "Spain" },
+  { id: cryptoId(), name: "Lamine Yamal", points: 1, country: "Spain" },
+  { id: cryptoId(), name: "Mikel Oyarzabal", points: 1, country: "Spain" },
+  { id: cryptoId(), name: "Víctor Muñoz", points: 4, country: "Spain" },
+  { id: cryptoId(), name: "Borja Iglesias", points: 4, country: "Spain" }
 ];
 
 const DEFAULT_OPPONENTS = [
@@ -849,7 +885,11 @@ function setupSmartPicker(pickerId, items, placeholder = "Search or choose") {
   });
 
   input.addEventListener("blur", () => {
-    setTimeout(() => menu.classList.remove("open"), 180);
+    setTimeout(() => {
+      if (document.activeElement !== input && !menu.contains(document.activeElement)) {
+        menu.classList.remove("open");
+      }
+    }, 180);
   });
 
   renderMenu(false);
@@ -1346,20 +1386,35 @@ function renderPlayers() {
   });
 }
 
+let otherPlayerCountryFilter = "all";
+
 function renderOtherPlayers() {
   const list = document.getElementById("otherPlayerList");
   if (!list) return;
 
   list.innerHTML = "";
-  [...(configState.otherPlayers || [])].sort((a,b) => a.name.localeCompare(b.name)).forEach(player => {
+  const players = [...(configState.otherPlayers || [])]
+    .filter(p => otherPlayerCountryFilter === "all" || p.country === otherPlayerCountryFilter)
+    .sort((a,b) => a.name.localeCompare(b.name));
+
+  if (!players.length) {
+    list.innerHTML = `<div class="empty">No players in this list yet.</div>`;
+    return;
+  }
+
+  players.forEach(player => {
     const item = document.createElement("div");
     item.className = "manager-item";
     item.innerHTML = `
       <div>
         <strong>${escapeHtml(player.name)}</strong>
-        <div class="muted">Correct scorer gives ${player.points} point${Number(player.points) === 1 ? "" : "s"}</div>
+        <div class="muted">${escapeHtml(player.country || "No country set")} · Correct scorer gives ${player.points} point${Number(player.points) === 1 ? "" : "s"}</div>
       </div>
       <div class="manager-item-actions">
+        <select class="country-select">
+          <option value="Norway">Norway</option>
+          <option value="Spain">Spain</option>
+        </select>
         <select>
           <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
           <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
@@ -1368,7 +1423,13 @@ function renderOtherPlayers() {
         <button type="button" class="ghost danger remove">Remove</button>
       </div>
     `;
-    const select = item.querySelector("select");
+    const countrySelect = item.querySelector(".country-select");
+    countrySelect.value = player.country || "Norway";
+    countrySelect.addEventListener("change", async e => {
+      player.country = e.target.value;
+      await saveConfig({ otherPlayers: configState.otherPlayers });
+    });
+    const select = item.querySelectorAll("select")[1];
     select.value = String(player.points);
     select.addEventListener("change", async e => {
       player.points = Number(e.target.value);
@@ -1388,6 +1449,23 @@ function renderOtherPlayers() {
     list.appendChild(item);
   });
 }
+
+document.getElementById("otherPlayerCountryFilter")?.addEventListener("click", event => {
+  const btn = event.target.closest(".country-filter-btn");
+  if (!btn) return;
+  otherPlayerCountryFilter = btn.dataset.country;
+  document.querySelectorAll("#otherPlayerCountryFilter .country-filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderOtherPlayers();
+});
+
+document.getElementById("resetOtherPlayersBtn")?.addEventListener("click", async () => {
+  if (!confirm("Replace your current Other Matches player list with the default Norway + Spain rosters? This cannot be undone.")) return;
+  configState.otherPlayers = DEFAULT_OTHER_PLAYERS.map(p => ({ ...p, id: cryptoId() }));
+  await saveConfig({ otherPlayers: configState.otherPlayers });
+});
+
+
 
 function renderSeasons() {
   const list = document.getElementById("seasonList");
@@ -1894,10 +1972,11 @@ document.getElementById("otherPlayerForm")?.addEventListener("submit", async eve
   event.preventDefault();
   const name = normaliseName(document.getElementById("otherPlayerName").value);
   const points = Number(document.getElementById("otherPlayerTier").value);
+  const country = document.getElementById("otherPlayerCountry").value;
   if (!name) return;
 
   configState.otherPlayers = configState.otherPlayers || [];
-  configState.otherPlayers.push({ id: cryptoId(), name, points });
+  configState.otherPlayers.push({ id: cryptoId(), name, points, country });
   await saveConfig({ otherPlayers: configState.otherPlayers });
   event.target.reset();
 });

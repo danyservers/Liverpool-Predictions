@@ -238,6 +238,7 @@ h2{font-size:1.3rem;font-weight:800}
 
 /* ---------- Forms inside panels ---------- */
 .manager-form{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end}
+.other-player-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
 .match-form{display:grid;grid-template-columns:2fr auto 1fr auto;gap:12px;align-items:end}
 .other-form{display:grid;grid-template-columns:1fr 1fr 170px auto;gap:12px;align-items:end}
 .inline-add{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:14px}
@@ -267,6 +268,14 @@ h2{font-size:1.3rem;font-weight:800}
 
 .manager-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
 .manager-toggle-buttons{display:flex;gap:8px;flex-wrap:wrap}
+
+.country-filter{display:flex;gap:6px;background:var(--bg-3);padding:4px;border-radius:999px}
+.country-filter-btn{
+  background:transparent;border:0;color:var(--text-dim);font-weight:700;font-size:.82rem;
+  padding:7px 14px;border-radius:999px;
+}
+.country-filter-btn:hover{filter:none;color:var(--text)}
+.country-filter-btn.active{background:var(--red);color:white}
 .collapsible-content{display:grid;gap:12px;margin-top:14px;max-height:2000px;overflow:hidden;transition:max-height .3s var(--ease)}
 .collapsible-content.collapsed{max-height:0;margin-top:0}
 .manager-search{margin-top:2px}
@@ -594,7 +603,7 @@ h2{font-size:1.3rem;font-weight:800}
 }
 @media(max-width:760px){
   .hero,.match-card-header,.match-header,.section-title{align-items:flex-start;flex-direction:column}
-  .login-form,.match-form,.manager-form,.other-form,.inline-add{grid-template-columns:1fr}
+  .login-form,.match-form,.manager-form,.other-form,.other-player-form,.inline-add{grid-template-columns:1fr}
   .score-grid,.mini-score-grid,.stat-grid,.summary-cards,.reveal-summary-grid{grid-template-columns:1fr}
   .hero-actions{width:100%}
   .account-badge,.account-actions button{width:100%}

@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=58" />
+  <link rel="stylesheet" href="style.css?v=59" />
 </head>
 <body>
   <div class="app-shell">
@@ -169,8 +169,12 @@
             <div id="otherTeamList" class="manager-list compact-list"></div>
           </div>
           <div id="otherPlayersManager" class="collapsible-content collapsed">
-            <form id="otherPlayerForm" class="manager-form">
+            <form id="otherPlayerForm" class="other-player-form">
               <input id="otherPlayerName" placeholder="Player name" required />
+              <select id="otherPlayerCountry">
+                <option value="Norway">Norway</option>
+                <option value="Spain">Spain</option>
+              </select>
               <select id="otherPlayerTier">
                 <option value="1">Tier 1 - main scorer: 1 pt</option>
                 <option value="2">Tier 2 - regular scorer: 2 pts</option>
@@ -181,7 +185,15 @@
               </select>
               <button type="submit">Add player</button>
             </form>
-            <p class="muted small-note">These players only apply to Other Matches. Default list includes Norway and Spain players.</p>
+            <div class="manager-toggle-row">
+              <div class="country-filter" id="otherPlayerCountryFilter">
+                <button type="button" class="country-filter-btn active" data-country="all">All</button>
+                <button type="button" class="country-filter-btn" data-country="Norway">Norway</button>
+                <button type="button" class="country-filter-btn" data-country="Spain">Spain</button>
+              </div>
+              <button type="button" class="ghost danger" id="resetOtherPlayersBtn">Reset to default rosters</button>
+            </div>
+            <p class="muted small-note">These players only apply to Other Matches.</p>
             <div id="otherPlayerList" class="manager-list"></div>
           </div>
         </section>
