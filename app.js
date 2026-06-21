@@ -1392,6 +1392,10 @@ function renderOtherPlayers() {
   const list = document.getElementById("otherPlayerList");
   if (!list) return;
 
+  list.classList.remove("other-players-bg-norway", "other-players-bg-spain");
+  if (otherPlayerCountryFilter === "Norway") list.classList.add("other-players-bg-norway");
+  else if (otherPlayerCountryFilter === "Spain") list.classList.add("other-players-bg-spain");
+
   list.innerHTML = "";
   const players = [...(configState.otherPlayers || [])]
     .filter(p => otherPlayerCountryFilter === "all" || p.country === otherPlayerCountryFilter)
@@ -1403,50 +1407,51 @@ function renderOtherPlayers() {
   }
 
   players.forEach(player => {
-    const item = document.createElement("div");
-    item.className = "manager-item";
-    item.innerHTML = `
-      <div>
-        <strong>${escapeHtml(player.name)}</strong>
-        <div class="muted">${escapeHtml(player.country || "No country set")} · Correct scorer gives ${player.points} point${Number(player.points) === 1 ? "" : "s"}</div>
-      </div>
-      <div class="manager-item-actions">
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `
+      <span class="player-row-name">
+        ${escapeHtml(player.name)}
+        ${otherPlayerCountryFilter === "all" ? `<small class="player-row-country">${escapeHtml(player.country || "?")}</small>` : ""}
+      </span>
+      <span class="player-row-actions">
         <select class="country-select">
           <option value="Norway">Norway</option>
           <option value="Spain">Spain</option>
+          <option value="Other">Other</option>
         </select>
         <select>
           <option value="1">1 pt</option><option value="2">2 pts</option><option value="3">3 pts</option>
           <option value="4">4 pts</option><option value="5">5 pts</option><option value="8">8 pts</option>
         </select>
-        <button type="button" class="ghost rename">Rename</button>
-        <button type="button" class="ghost danger remove">Remove</button>
-      </div>
+        <button type="button" class="ghost rename" title="Rename">✎</button>
+        <button type="button" class="ghost danger remove" title="Remove">✕</button>
+      </span>
     `;
-    const countrySelect = item.querySelector(".country-select");
+    const countrySelect = row.querySelector(".country-select");
     countrySelect.value = player.country || "Norway";
     countrySelect.addEventListener("change", async e => {
       player.country = e.target.value;
       await saveConfig({ otherPlayers: configState.otherPlayers });
     });
-    const select = item.querySelectorAll("select")[1];
+    const select = row.querySelectorAll("select")[1];
     select.value = String(player.points);
     select.addEventListener("change", async e => {
       player.points = Number(e.target.value);
       await saveConfig({ otherPlayers: configState.otherPlayers });
     });
-    item.querySelector(".rename").addEventListener("click", async () => {
+    row.querySelector(".rename").addEventListener("click", async () => {
       const next = prompt("Player name:", player.name);
       if (!next) return;
       player.name = normaliseName(next);
       await saveConfig({ otherPlayers: configState.otherPlayers });
     });
-    item.querySelector(".remove").addEventListener("click", async () => {
+    row.querySelector(".remove").addEventListener("click", async () => {
       if (!confirm(`Remove ${player.name}?`)) return;
       configState.otherPlayers = configState.otherPlayers.filter(p => p.id !== player.id);
       await saveConfig({ otherPlayers: configState.otherPlayers });
     });
-    list.appendChild(item);
+    list.appendChild(row);
   });
 }
 
@@ -1690,8 +1695,33 @@ function safeRenderStep(name, fn) {
   }
 }
 
+const NAME_COUNTRY_LOOKUP = {};
+DEFAULT_OTHER_PLAYERS.forEach(p => { NAME_COUNTRY_LOOKUP[p.name.toLowerCase()] = p.country; });
+
+let otherPlayersMigrated = false;
+
+function migrateOtherPlayerCountries() {
+  if (otherPlayersMigrated) return;
+  otherPlayersMigrated = true;
+  if (!configState.otherPlayers || !configState.otherPlayers.length) return;
+
+  let changed = false;
+  configState.otherPlayers.forEach(p => {
+    if (!p.country) {
+      const match = NAME_COUNTRY_LOOKUP[p.name.toLowerCase()];
+      if (match) {
+        p.country = match;
+        changed = true;
+      }
+    }
+  });
+  if (changed) saveConfig({ otherPlayers: configState.otherPlayers });
+}
+
 function render() {
   if (!currentProfile) return;
+
+  migrateOtherPlayerCountries();
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);
   safeRenderStep("setDefaultMatchDates", setDefaultMatchDates);
