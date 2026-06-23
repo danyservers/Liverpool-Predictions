@@ -105,12 +105,67 @@ const DEFAULT_OTHER_PLAYERS = [
 ];
 
 const DEFAULT_OPPONENTS = [
+  // Premier League (already present)
   ["Arsenal","ARS"], ["Chelsea","CHE"], ["Manchester City","MCI"], ["Manchester United","MUN"],
   ["Everton","EVE"], ["Tottenham","TOT"], ["Newcastle","NEW"], ["Aston Villa","AVL"],
   ["Brighton","BHA"], ["West Ham","WHU"], ["Crystal Palace","CRY"], ["Fulham","FUL"],
   ["Bournemouth","BOU"], ["Brentford","BRE"], ["Wolves","WOL"], ["Nottingham Forest","NFO"],
-  ["Real Madrid","RMA"], ["Barcelona","BAR"], ["Bayern Munich","BAY"], ["PSG","PSG"],
-  ["Inter","INT"], ["AC Milan","MIL"], ["Atletico Madrid","ATM"], ["Napoli","NAP"]
+  ["Leeds United","LEE"],
+  // Spain
+  ["Real Madrid","RMA"], ["Barcelona","BAR"], ["Atletico Madrid","ATM"], ["Sevilla","SEV"],
+  ["Valencia","VAL"], ["Villarreal","VIL"], ["Real Sociedad","RSO"], ["Athletic Bilbao","ATH"], ["Real Betis","BET"],
+  // Italy
+  ["Juventus","JUV"], ["AC Milan","MIL"], ["Inter","INT"], ["Napoli","NAP"], ["AS Roma","ROM"],
+  ["Lazio","LAZ"], ["Fiorentina","FIO"], ["Atalanta","ATA"],
+  // Germany
+  ["Bayern Munich","BAY"], ["Borussia Dortmund","DOR"], ["RB Leipzig","RBL"], ["Bayer Leverkusen","LEV"],
+  ["Borussia Monchengladbach","BMG"], ["Schalke 04","S04"], ["Werder Bremen","WRB"], ["Wolfsburg","WFB"],
+  ["Eintracht Frankfurt","SGE"], ["Hamburger SV","HSV"], ["VfB Stuttgart","VFB"],
+  // France
+  ["PSG","PSG"], ["Marseille","OM"], ["Monaco","ASM"], ["Lyon","OL"], ["Lille","LIL"],
+  ["Lens","RCL"], ["Nice","OGC"], ["Rennes","SRFC"],
+  // Portugal
+  ["Porto","FCP"], ["Benfica","SLB"], ["Sporting CP","SCP"], ["Braga","SCB"],
+  // Netherlands
+  ["Ajax","AJA"], ["PSV Eindhoven","PSV"], ["Feyenoord","FEY"], ["AZ Alkmaar","AZA"],
+  // Belgium
+  ["Anderlecht","AND"], ["Club Brugge","CLB"], ["Genk","GEN"],
+  // Scotland
+  ["Celtic","CEL"], ["Rangers","RAN"],
+  // Turkey
+  ["Galatasaray","GAL"], ["Fenerbahce","FEN"], ["Besiktas","BES"],
+  // Russia / Ukraine
+  ["CSKA Moscow","CSK"], ["Spartak Moscow","SPA"], ["Zenit","ZEN"], ["Shakhtar Donetsk","SHK"], ["Dynamo Kyiv","DYK"],
+  // Greece
+  ["Olympiacos","OLY"], ["Panathinaikos","PAO"], ["AEK Athens","AEK"],
+  // Austria
+  ["Red Bull Salzburg","RBS"], ["Rapid Wien","RAP"],
+  // Switzerland
+  ["Basel","BAS"], ["Young Boys","YB"],
+  // Serbia
+  ["Red Star Belgrade","RSB"], ["Partizan","PFC"],
+  // Czech Republic
+  ["Sparta Prague","SPP"], ["Slavia Prague","SLP"], ["Viktoria Plzen","VIK"],
+  // Croatia
+  ["Dinamo Zagreb","DZG"],
+  // Denmark
+  ["FC Copenhagen","FCK"], ["Brondby","BRO"],
+  // Sweden
+  ["Malmo FF","MFF"],
+  // Norway
+  ["Bodo/Glimt","BOG"], ["Rosenborg","RBK"],
+  // Poland
+  ["Legia Warsaw","LEG"],
+  // Romania
+  ["Steaua Bucharest","STB"],
+  // Hungary
+  ["Ferencvaros","FTC"],
+  // Bulgaria
+  ["CSKA Sofia","CSO"],
+  // Cyprus
+  ["APOEL","APO"],
+  // Israel
+  ["Maccabi Tel Aviv","MTA"]
 ].map(([name, code]) => ({ id: cryptoId(), name, code }));
 
 function cryptoId() {
@@ -119,17 +174,29 @@ function cryptoId() {
 }
 
 const DEFAULT_OTHER_TEAMS = [
-  { id: cryptoId(), name: "Norway", code: "NOR" },
-  { id: cryptoId(), name: "Spain", code: "ESP" },
-  { id: cryptoId(), name: "Denmark", code: "DEN" },
-  { id: cryptoId(), name: "Sweden", code: "SWE" },
-  { id: cryptoId(), name: "England", code: "ENG" },
-  { id: cryptoId(), name: "France", code: "FRA" },
-  { id: cryptoId(), name: "Germany", code: "GER" },
-  { id: cryptoId(), name: "Italy", code: "ITA" },
-  { id: cryptoId(), name: "Portugal", code: "POR" },
-  { id: cryptoId(), name: "Netherlands", code: "NED" }
-];
+  ["Argentina","ARG","🇦🇷"], ["Belgium","BEL","🇧🇪"], ["Bolivia","BOL","🇧🇴"], ["Brazil","BRA","🇧🇷"],
+  ["Chile","CHI","🇨🇱"], ["France","FRA","🇫🇷"], ["Mexico","MEX","🇲🇽"], ["Paraguay","PAR","🇵🇾"],
+  ["Peru","PER","🇵🇪"], ["Romania","ROU","🇷🇴"], ["United States","USA","🇺🇸"], ["Uruguay","URU","🇺🇾"],
+  ["Austria","AUT","🇦🇹"], ["Egypt","EGY","🇪🇬"], ["Germany","GER","🇩🇪"], ["Hungary","HUN","🇭🇺"],
+  ["Italy","ITA","🇮🇹"], ["Netherlands","NED","🇳🇱"], ["Spain","ESP","🇪🇸"], ["Switzerland","SUI","🇨🇭"],
+  ["Sweden","SWE","🇸🇪"], ["Cuba","CUB","🇨🇺"], ["Indonesia","IDN","🇮🇩"], ["Norway","NOR","🇳🇴"],
+  ["Poland","POL","🇵🇱"], ["England","ENG","🇬🇧"], ["South Korea","KOR","🇰🇷"], ["Scotland","SCO","🇬🇧"],
+  ["Turkey","TUR","🇹🇷"], ["Northern Ireland","NIR","🇬🇧"], ["Wales","WAL","🇬🇧"], ["Bulgaria","BUL","🇧🇬"],
+  ["Colombia","COL","🇨🇴"], ["North Korea","PRK","🇰🇵"], ["Portugal","POR","🇵🇹"], ["El Salvador","SLV","🇸🇻"],
+  ["Israel","ISR","🇮🇱"], ["Morocco","MAR","🇲🇦"], ["Australia","AUS","🇦🇺"], ["Haiti","HAI","🇭🇹"],
+  ["DR Congo","COD","🇨🇩"], ["Iran","IRN","🇮🇷"], ["Tunisia","TUN","🇹🇳"], ["Algeria","ALG","🇩🇿"],
+  ["Cameroon","CMR","🇨🇲"], ["Honduras","HON","🇭🇳"], ["Kuwait","KUW","🇰🇼"], ["New Zealand","NZL","🇳🇿"],
+  ["Canada","CAN","🇨🇦"], ["Denmark","DEN","🇩🇰"], ["Iraq","IRQ","🇮🇶"], ["Costa Rica","CRC","🇨🇷"],
+  ["Republic of Ireland","IRL","🇮🇪"], ["United Arab Emirates","UAE","🇦🇪"], ["Greece","GRE","🇬🇷"],
+  ["Nigeria","NGA","🇳🇬"], ["Saudi Arabia","KSA","🇸🇦"], ["Croatia","CRO","🇭🇷"], ["Jamaica","JAM","🇯🇲"],
+  ["Japan","JPN","🇯🇵"], ["South Africa","RSA","🇿🇦"], ["China","CHN","🇨🇳"], ["Ecuador","ECU","🇪🇨"],
+  ["Senegal","SEN","🇸🇳"], ["Slovenia","SVN","🇸🇮"], ["Angola","AGO","🇦🇴"], ["Ivory Coast","CIV","🇨🇮"],
+  ["Ghana","GHA","🇬🇭"], ["Togo","TOG","🇹🇬"], ["Trinidad and Tobago","TRI","🇹🇹"], ["Ukraine","UKR","🇺🇦"],
+  ["Slovakia","SVK","🇸🇰"], ["Bosnia and Herzegovina","BIH","🇧🇦"], ["Iceland","ISL","🇮🇸"],
+  ["Panama","PAN","🇵🇦"], ["Qatar","QAT","🇶🇦"], ["Serbia","SRB","🇷🇸"], ["Czech Republic","CZE","🇨🇿"],
+  ["Russia","RUS","🇷🇺"], ["Cape Verde","CPV","🇨🇻"], ["Curaçao","CUW","🇨🇼"], ["Jordan","JOR","🇯🇴"],
+  ["Uzbekistan","UZB","🇺🇿"]
+].map(([name, code, flag]) => ({ id: cryptoId(), name, code, flag }));
 
 const defaultConfig = () => ({
   activeSeasonId: DEFAULT_SEASON_ID,
@@ -639,20 +706,17 @@ function renderOtherTeamList() {
 
   list.innerHTML = "";
   filteredTeams.forEach(team => {
-    const item = document.createElement("div");
-    item.className = "manager-item compact-item";
-    item.innerHTML = `
-      <div>
-        <strong>${escapeHtml(team.name)}</strong>
-        <div class="muted">${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</div>
-      </div>
-      <div class="manager-item-actions">
-        <button type="button" class="ghost rename">Rename</button>
-        <button type="button" class="ghost danger remove">Remove</button>
-      </div>
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `
+      <span class="player-row-name">${escapeHtml(team.name)} <small class="player-row-country">${team.flag ? team.flag + " " : ""}${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</small></span>
+      <span class="player-row-actions">
+        <button type="button" class="ghost rename" title="Rename">✎</button>
+        <button type="button" class="ghost danger remove" title="Remove">✕</button>
+      </span>
     `;
 
-    item.querySelector(".rename").addEventListener("click", async () => {
+    row.querySelector(".rename").addEventListener("click", async () => {
       const nextName = prompt("Team name:", team.name);
       if (!nextName) return;
       const nextCode = prompt("Badge code:", team.code || nextName.slice(0,3).toUpperCase());
@@ -661,13 +725,13 @@ function renderOtherTeamList() {
       await saveConfig({ otherTeams: configState.otherTeams });
     });
 
-    item.querySelector(".remove").addEventListener("click", async () => {
+    row.querySelector(".remove").addEventListener("click", async () => {
       if (!confirm(`Remove ${team.name}?`)) return;
       configState.otherTeams = (configState.otherTeams || []).filter(t => t.id !== team.id);
       await saveConfig({ otherTeams: configState.otherTeams });
     });
 
-    list.appendChild(item);
+    list.appendChild(row);
   });
 }
 
@@ -917,20 +981,17 @@ function renderOpponentManager() {
 
   list.innerHTML = "";
   filtered.forEach(team => {
-    const item = document.createElement("div");
-    item.className = "manager-item compact-item";
-    item.innerHTML = `
-      <div>
-        <strong>${escapeHtml(team.name)}</strong>
-        <div class="muted">${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</div>
-      </div>
-      <div class="manager-item-actions">
-        <button type="button" class="ghost rename">Rename</button>
-        <button type="button" class="ghost danger remove">Remove</button>
-      </div>
+    const row = document.createElement("div");
+    row.className = "player-row";
+    row.innerHTML = `
+      <span class="player-row-name">${escapeHtml(team.name)} <small class="player-row-country">${escapeHtml(team.code || team.name.slice(0,3).toUpperCase())}</small></span>
+      <span class="player-row-actions">
+        <button type="button" class="ghost rename" title="Rename">✎</button>
+        <button type="button" class="ghost danger remove" title="Remove">✕</button>
+      </span>
     `;
 
-    item.querySelector(".rename").addEventListener("click", async () => {
+    row.querySelector(".rename").addEventListener("click", async () => {
       const nextName = prompt("Opponent name:", team.name);
       if (!nextName) return;
       const nextCode = prompt("Badge code:", team.code || nextName.slice(0,3).toUpperCase());
@@ -939,13 +1000,13 @@ function renderOpponentManager() {
       await saveConfig({ opponents: configState.opponents });
     });
 
-    item.querySelector(".remove").addEventListener("click", async () => {
+    row.querySelector(".remove").addEventListener("click", async () => {
       if (!confirm(`Remove ${team.name}?`)) return;
       configState.opponents = (configState.opponents || []).filter(t => t.id !== team.id);
       await saveConfig({ opponents: configState.opponents });
     });
 
-    list.appendChild(item);
+    list.appendChild(row);
   });
 }
 
@@ -1462,6 +1523,18 @@ document.getElementById("otherPlayerCountryFilter")?.addEventListener("click", e
   document.querySelectorAll("#otherPlayerCountryFilter .country-filter-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   renderOtherPlayers();
+});
+
+document.getElementById("resetOpponentsBtn")?.addEventListener("click", async () => {
+  if (!confirm("Replace your current opponent list with the curated list of ~100 major European clubs? This cannot be undone.")) return;
+  configState.opponents = DEFAULT_OPPONENTS.map(o => ({ ...o, id: cryptoId() }));
+  await saveConfig({ opponents: configState.opponents });
+});
+
+document.getElementById("resetOtherTeamsBtn")?.addEventListener("click", async () => {
+  if (!confirm("Replace your current Other Matches team list with all 80 World Cup nations? This cannot be undone.")) return;
+  configState.otherTeams = DEFAULT_OTHER_TEAMS.map(t => ({ ...t, id: cryptoId() }));
+  await saveConfig({ otherTeams: configState.otherTeams });
 });
 
 document.getElementById("resetOtherPlayersBtn")?.addEventListener("click", async () => {
