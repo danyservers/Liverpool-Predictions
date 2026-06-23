@@ -241,7 +241,7 @@ h2{font-size:1.3rem;font-weight:800}
 .other-player-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
 .match-form{display:grid;grid-template-columns:2fr auto 1fr auto;gap:12px;align-items:end}
 .other-form{display:grid;grid-template-columns:1fr 1fr 170px auto;gap:12px;align-items:end}
-.inline-add{display:grid;grid-template-columns:2fr 1fr auto auto;gap:10px;margin-top:14px}
+.inline-add{display:grid;grid-template-columns:2fr 1fr auto;gap:10px;margin-top:14px}
 .away-toggle,.compact-away-toggle{
   position:relative;display:flex;align-items:center;justify-content:center;
   height:46px;padding:0;border-radius:999px;background:var(--bg-3);

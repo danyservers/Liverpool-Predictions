@@ -1525,24 +1525,6 @@ document.getElementById("otherPlayerCountryFilter")?.addEventListener("click", e
   renderOtherPlayers();
 });
 
-document.getElementById("resetOpponentsBtn")?.addEventListener("click", async () => {
-  if (!confirm("Replace your current opponent list with the curated list of ~100 major European clubs? This cannot be undone.")) return;
-  configState.opponents = DEFAULT_OPPONENTS.map(o => ({ ...o, id: cryptoId() }));
-  await saveConfig({ opponents: configState.opponents });
-});
-
-document.getElementById("resetOtherTeamsBtn")?.addEventListener("click", async () => {
-  if (!confirm("Replace your current Other Matches team list with all 80 World Cup nations? This cannot be undone.")) return;
-  configState.otherTeams = DEFAULT_OTHER_TEAMS.map(t => ({ ...t, id: cryptoId() }));
-  await saveConfig({ otherTeams: configState.otherTeams });
-});
-
-document.getElementById("resetOtherPlayersBtn")?.addEventListener("click", async () => {
-  if (!confirm("Replace your current Other Matches player list with the default Norway + Spain rosters? This cannot be undone.")) return;
-  configState.otherPlayers = DEFAULT_OTHER_PLAYERS.map(p => ({ ...p, id: cryptoId() }));
-  await saveConfig({ otherPlayers: configState.otherPlayers });
-});
-
 
 
 function renderSeasons() {
@@ -1773,6 +1755,54 @@ DEFAULT_OTHER_PLAYERS.forEach(p => { NAME_COUNTRY_LOOKUP[p.name.toLowerCase()] =
 
 let otherPlayersMigrated = false;
 
+let opponentsMerged = false;
+function mergeDefaultOpponents() {
+  if (opponentsMerged) return;
+  opponentsMerged = true;
+  configState.opponents = configState.opponents || [];
+  const existingNames = new Set(configState.opponents.map(o => o.name.toLowerCase()));
+  let added = false;
+  DEFAULT_OPPONENTS.forEach(def => {
+    if (!existingNames.has(def.name.toLowerCase())) {
+      configState.opponents.push({ ...def, id: cryptoId() });
+      added = true;
+    }
+  });
+  if (added) saveConfig({ opponents: configState.opponents });
+}
+
+let otherTeamsMerged = false;
+function mergeDefaultOtherTeams() {
+  if (otherTeamsMerged) return;
+  otherTeamsMerged = true;
+  configState.otherTeams = configState.otherTeams || [];
+  const existingNames = new Set(configState.otherTeams.map(t => t.name.toLowerCase()));
+  let added = false;
+  DEFAULT_OTHER_TEAMS.forEach(def => {
+    if (!existingNames.has(def.name.toLowerCase())) {
+      configState.otherTeams.push({ ...def, id: cryptoId() });
+      added = true;
+    }
+  });
+  if (added) saveConfig({ otherTeams: configState.otherTeams });
+}
+
+let otherPlayersMergedDefaults = false;
+function mergeDefaultOtherPlayers() {
+  if (otherPlayersMergedDefaults) return;
+  otherPlayersMergedDefaults = true;
+  configState.otherPlayers = configState.otherPlayers || [];
+  const existingNames = new Set(configState.otherPlayers.map(p => p.name.toLowerCase()));
+  let added = false;
+  DEFAULT_OTHER_PLAYERS.forEach(def => {
+    if (!existingNames.has(def.name.toLowerCase())) {
+      configState.otherPlayers.push({ ...def, id: cryptoId() });
+      added = true;
+    }
+  });
+  if (added) saveConfig({ otherPlayers: configState.otherPlayers });
+}
+
 function migrateOtherPlayerCountries() {
   if (otherPlayersMigrated) return;
   otherPlayersMigrated = true;
@@ -1794,6 +1824,9 @@ function migrateOtherPlayerCountries() {
 function render() {
   if (!currentProfile) return;
 
+  mergeDefaultOpponents();
+  mergeDefaultOtherTeams();
+  mergeDefaultOtherPlayers();
   migrateOtherPlayerCountries();
 
   safeRenderStep("updatePlayerDatalists", updatePlayerDatalists);

@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="style.css?v=63" />
+  <link rel="stylesheet" href="style.css?v=64" />
 </head>
 <body>
   <div class="app-shell">
@@ -107,7 +107,6 @@
               <input id="newOpponentInput" placeholder="Add opponent, e.g. Benfica" />
               <input id="newOpponentCodeInput" placeholder="Badge, e.g. BEN" maxlength="5" />
               <button type="button" class="ghost" id="addOpponentBtn">Add opponent</button>
-              <button type="button" class="ghost danger" id="resetOpponentsBtn">Reset to default clubs</button>
             </div>
             <input id="opponentSearchInput" class="manager-search" placeholder="Search saved opponents" />
             <div id="opponentList" class="manager-list compact-list"></div>
@@ -165,7 +164,6 @@
               <input id="newOtherTeamInput" placeholder="Add other team, e.g. Denmark" />
               <input id="newOtherTeamCodeInput" placeholder="Badge, e.g. DEN" maxlength="5" />
               <button type="button" class="ghost" id="addOtherTeamBtn">Add team</button>
-              <button type="button" class="ghost danger" id="resetOtherTeamsBtn">Reset to all World Cup nations</button>
             </div>
             <input id="otherTeamSearchInput" class="manager-search" placeholder="Search saved teams" />
             <div id="otherTeamList" class="manager-list compact-list"></div>
@@ -195,7 +193,6 @@
                 <button type="button" class="country-filter-btn" data-country="Spain">Spain</button>
                 <button type="button" class="country-filter-btn" data-country="Other">Other</button>
               </div>
-              <button type="button" class="ghost danger" id="resetOtherPlayersBtn">Reset to default rosters</button>
             </div>
             <p class="muted small-note">These players only apply to Other Matches.</p>
             <div id="otherPlayerList" class="manager-list"></div>
