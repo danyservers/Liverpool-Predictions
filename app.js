@@ -2342,6 +2342,17 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+document.querySelectorAll(".help-tip").forEach(tip => {
+  tip.addEventListener("click", event => {
+    event.stopPropagation();
+    document.querySelectorAll(".help-tip.open").forEach(t => { if (t !== tip) t.classList.remove("open"); });
+    tip.classList.toggle("open");
+  });
+});
+document.addEventListener("click", () => {
+  document.querySelectorAll(".help-tip.open").forEach(t => t.classList.remove("open"));
+});
+
 boot();
 
 updateBodyTabTheme();
