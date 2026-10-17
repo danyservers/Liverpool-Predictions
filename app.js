@@ -255,8 +255,9 @@ function normaliseName(name) {
 }
 
 function parseScorers(value) {
-  if (Array.isArray(value)) return value.map(normaliseName).filter(Boolean).slice(0, 3);
-  return String(value || "").split(",").map(normaliseName).filter(Boolean).slice(0, 3);
+  // No cap here: actual scorers can be any number. Predictions are limited to 3 by the form itself.
+  if (Array.isArray(value)) return value.map(normaliseName).filter(Boolean);
+  return String(value || "").split(",").map(normaliseName).filter(Boolean);
 }
 
 function getPlayerPoints(playerName, gameType) {
@@ -271,35 +272,50 @@ function getPlayerPoints(playerName, gameType) {
   return player ? Number(player.points) : 2;
 }
 
+function uniquePicks(scorers) {
+  const seen = new Set();
+  return parseScorers(scorers).slice(0, 3).filter(name => {
+    const key = name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Rules: exact score = +5.
+// Each picked scorer (order doesn't matter) earns their tier points for EVERY goal they scored.
+// Example: Barcola (2 pts tier) scores twice -> 2 x 2 = 4 points.
 function scorePrediction(prediction, match) {
-  if (!prediction) return { points: 0, breakdown: [] };
+  if (!prediction) return { points: 0, breakdown: [], hits: [], exact: false };
 
   let points = 0;
   const breakdown = [];
+  const hits = [];
 
-  if (isExactScoreCorrect(prediction, match)) {
+  const exact = isExactScoreCorrect(prediction, match);
+  if (exact) {
     points += 5;
     breakdown.push("Exact score +5");
   }
 
-  const predictedScorers = parseScorers(prediction.scorers);
-  const actualScorers = parseScorers(match.actualScorers);
-  const usedActualIndexes = [];
-
-  predictedScorers.forEach(player => {
-    const index = actualScorers.findIndex((actualPlayer, i) =>
-      !usedActualIndexes.includes(i) && actualPlayer.toLowerCase() === player.toLowerCase()
-    );
-
-    if (index !== -1) {
-      usedActualIndexes.push(index);
-      const scorerPoints = getPlayerPoints(player, match.gameType);
-      points += scorerPoints;
-      breakdown.push(`${player} +${scorerPoints}`);
-    }
+  const goalsByPlayer = {};
+  parseScorers(match.actualScorers).forEach(name => {
+    const key = name.toLowerCase();
+    goalsByPlayer[key] = (goalsByPlayer[key] || 0) + 1;
   });
 
-  return { points, breakdown };
+  uniquePicks(prediction.scorers).forEach(player => {
+    const goals = goalsByPlayer[player.toLowerCase()] || 0;
+    const perGoal = getPlayerPoints(player, match.gameType);
+    const scorerPoints = perGoal * goals;
+    if (goals > 0) {
+      points += scorerPoints;
+      breakdown.push(goals > 1 ? `${player} ${goals} goals x ${perGoal} = +${scorerPoints}` : `${player} +${scorerPoints}`);
+    }
+    hits.push({ player, hit: goals > 0, goals, perGoal, points: scorerPoints });
+  });
+
+  return { points, breakdown, hits, exact };
 }
 
 function getPred(matchId, playerKey) {
@@ -426,7 +442,11 @@ async function savePrediction(matchId, data) {
     throw new Error("Add your predicted score before saving.");
   }
 
-  const scorers = parseScorers(data.scorers);
+  const scorers = parseScorers(data.scorers).slice(0, 3);
+  const lower = scorers.map(n => n.toLowerCase());
+  if (new Set(lower).size !== lower.length) {
+    throw new Error("You picked the same player twice. Choose 3 different goalscorers.");
+  }
 
   await setDoc(doc(db, "matches", matchId, "predictions", currentProfile.key), {
     ownerKey: currentProfile.key,
@@ -502,10 +522,11 @@ function isExactScoreCorrect(prediction, match) {
   // Strict exact score only.
   // Do not accept reversed scores. Example:
   // predicted Liverpool 3-1 Arsenal must not match actual Liverpool 1-3 Arsenal.
-  return (
-    String(prediction.scoreHome) === String(match.actualHome) &&
-    String(prediction.scoreAway) === String(match.actualAway)
-  );
+  const toNum = v => (String(v ?? "").trim() === "" ? NaN : Number(v));
+  const ph = toNum(prediction.scoreHome), pa = toNum(prediction.scoreAway);
+  const ah = toNum(match.actualHome), aa = toNum(match.actualAway);
+  if ([ph, pa, ah, aa].some(Number.isNaN)) return false;
+  return ph === ah && pa === aa;
 }
 
 async function createLfcMatch(opponentName, date, isAway = false) {
@@ -1100,15 +1121,47 @@ function setupActualScorerPicker(node, match, existingActualScorers = []) {
     ? existingActualScorers
     : parseScorers(existingActualScorers);
 
-  for (let i = 0; i < 6; i++) {
+  const addInput = (value = "") => {
+    const i = wrapper.querySelectorAll("input").length;
     const input = document.createElement("input");
     input.dataset.actualScorerIndex = String(i);
     input.setAttribute("list", listId);
     input.placeholder = `Search actual scorer ${i + 1}`;
     input.autocomplete = "off";
-    input.value = scorers[i] || "";
-    wrapper.appendChild(input);
-  }
+    input.value = value;
+    wrapper.insertBefore(input, addBtn);
+    return input;
+  };
+
+  const addBtn = document.createElement("button");
+  addBtn.type = "button";
+  addBtn.className = "ghost add-scorer-btn";
+  addBtn.textContent = "+ Add scorer";
+  wrapper.appendChild(addBtn);
+
+  const MAX_ACTUAL_SCORERS = 10;
+  const updateAddBtn = () => {
+    const count = wrapper.querySelectorAll("input").length;
+    addBtn.hidden = count >= MAX_ACTUAL_SCORERS;
+    addBtn.textContent = `+ Add scorer (${count}/${MAX_ACTUAL_SCORERS})`;
+  };
+
+  const startCount = Math.min(MAX_ACTUAL_SCORERS, Math.max(5, scorers.length));
+  for (let i = 0; i < startCount; i++) addInput(scorers[i] || "");
+  updateAddBtn();
+
+  addBtn.addEventListener("click", () => {
+    if (wrapper.querySelectorAll("input").length >= MAX_ACTUAL_SCORERS) return;
+    const input = addInput();
+    updateAddBtn();
+    const card = wrapper.closest(".match-card");
+    if (card) {
+      const save = () => saveActualDraft(match.id, readActualForm(card));
+      input.addEventListener("input", save);
+      input.addEventListener("change", save);
+    }
+    input.focus();
+  });
 
   actualField.replaceWith(wrapper);
 }
@@ -1119,7 +1172,8 @@ function getActualScorersFromNode(node) {
   if (group) {
     return Array.from(group.querySelectorAll("input, select"))
       .map(field => normaliseName(field.value || ""))
-      .filter(Boolean);
+      .filter(Boolean)
+      .slice(0, 10);
   }
 
   const field = node.querySelector('[data-actual="actualScorers"]');
@@ -1561,19 +1615,12 @@ function renderSeasons() {
 }
 
 function predictionDetailHtml(label, pred, match, score) {
-  const predictedScorers = parseScorers(pred?.scorers);
-  const actualScorers = parseScorers(match.actualScorers).map(s => s.toLowerCase());
-  const exact = pred &&
-    String(pred.scoreHome) === String(match.actualHome) &&
-    String(pred.scoreAway) === String(match.actualAway);
-
-  const scorerRows = predictedScorers.length
-    ? predictedScorers.map(player => {
-        const hit = actualScorers.includes(player.toLowerCase());
-        const pts = hit ? getPlayerPoints(player, match.gameType) : 0;
+  const exact = score.exact;
+  const scorerRows = score.hits.length
+    ? score.hits.map(({ player, hit, goals, perGoal, points: pts }) => {
         return `
           <div class="summary-line ${hit ? "hit" : "miss"}">
-            <span>${hit ? "✓" : "✕"} ${escapeHtml(player)}</span>
+            <span>${hit ? "✓" : "✕"} ${escapeHtml(player)}${goals > 1 ? ` <small>(${goals} goals x ${perGoal})</small>` : ""}</span>
             <strong>${hit ? `+${pts}` : "0"}</strong>
           </div>
         `;
@@ -1598,15 +1645,24 @@ function predictionDetailHtml(label, pred, match, score) {
   `;
 }
 
-function showRoundSummary(match, predictionMap = null) {
+function showRoundSummary(match, predictionMap = null, options = {}) {
   const modal = document.getElementById("roundSummaryModal");
   const content = document.getElementById("roundSummaryContent");
   if (!modal || !content) return;
+
+  const eyebrow = modal.querySelector(".eyebrow");
+  if (eyebrow) eyebrow.textContent = options.fromHistory ? "Revealed predictions" : "Reveal complete";
 
   const danyPred = predictionMap?.dany || getPred(match.id, "dany");
   const isaPred = predictionMap?.isa || getPred(match.id, "isa");
   const danyScore = scorePrediction(danyPred, match);
   const isaScore = scorePrediction(isaPred, match);
+  const stored = match.summary;
+  let oldRulesNote = "";
+  if (options.fromHistory && stored &&
+      (stored.danyPoints !== danyScore.points || stored.isaPoints !== isaScore.points)) {
+    oldRulesNote = `<p class="muted small-note">Saved score for this match is Dany ${stored.danyPoints ?? 0} - ${stored.isaPoints ?? 0} Isa (scored under the old rules). The cards show the current rules. Use "Reopen to fix" and reveal again to update the saved score.</p>`;
+  }
   const summary = match.summary || {
     danyPoints: danyScore.points,
     isaPoints: isaScore.points,
@@ -1635,6 +1691,7 @@ function showRoundSummary(match, predictionMap = null) {
         <div class="summary-line"><span>Overall leader</span><strong>${escapeHtml(summary.overallLeader || "-")}</strong></div>
       </div>
     </div>
+    ${oldRulesNote}
   `;
 
   modal.classList.add("show");
@@ -1674,6 +1731,38 @@ function summaryCardHtml(match) {
   `;
 }
 
+async function showHistoryPredictions(match) {
+  try {
+    const snap = await getDocs(collection(db, "matches", match.id, "predictions"));
+    const map = {};
+    snap.docs.forEach(d => { map[d.id] = { id: d.id, ...d.data() }; });
+    showRoundSummary(match, map, { fromHistory: true });
+  } catch (error) {
+    console.error("Could not load predictions:", error);
+    alert(`Could not load predictions: ${error.message || "Unknown error"}`);
+  }
+}
+
+async function reopenMatch(matchId) {
+  const ok = confirm(
+    "Reopen this match?\n\nIt moves back to the open matches list so you can fix the result and scorers, then press Reveal again. Points are recalculated on the new reveal."
+  );
+  if (!ok) return;
+  try {
+    await updateDoc(doc(db, "matches", matchId), {
+      revealed: false,
+      calculated: false,
+      summary: null,
+      updatedAt: serverTimestamp()
+    });
+    clearActualDraft(matchId);
+    setCloudStatus("Match reopened", "online");
+  } catch (error) {
+    console.error("Reopen failed:", error);
+    alert(`Could not reopen match: ${error.message || "Unknown error"}`);
+  }
+}
+
 async function deleteHistoryMatch(matchId) {
   if (!confirm("Delete this completed match? Scores will update automatically.")) return;
   await deleteMatch(matchId, false);
@@ -1710,11 +1799,15 @@ function renderHistory() {
       <div class="history-details collapsed">
         <div class="history-main">${summaryCardHtml(match)}</div>
         <div class="history-actions">
+          <button type="button" class="check-predictions">Check predictions</button>
+          <button type="button" class="ghost reopen-history">Reopen to fix</button>
           <button type="button" class="ghost danger delete-history">Delete</button>
         </div>
       </div>
     `;
     item.querySelector(".delete-history").addEventListener("click", () => deleteHistoryMatch(match.id));
+    item.querySelector(".reopen-history").addEventListener("click", () => reopenMatch(match.id));
+    item.querySelector(".check-predictions").addEventListener("click", () => showHistoryPredictions(match));
     item.querySelector(".history-summary-toggle").addEventListener("click", () => {
       item.classList.toggle("expanded");
       item.querySelector(".history-details").classList.toggle("collapsed");
